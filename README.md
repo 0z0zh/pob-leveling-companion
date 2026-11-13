@@ -119,6 +119,8 @@ exe と、同じフォルダに作られる `config.json` と `cache\` を削除
 
 ### 開発
 - exe のビルド: `build_exe.bat` (`.venv` に pywebview と PyInstaller をインストールし、`dist\PoBLevelingCompanion.exe` を作成。ビルドの作業ファイルは `build\` に作られます)
+- 自動ビルド: GitHub Actions (`.github/workflows/build.yml`) が `main` への push と Pull Request ごとに exe をビルドします。`v0.1.1` のようなタグを push すると、同じ名前のリリースに exe と SHA-256 チェックサム (`.sha256`) を自動で添付します。ビルドに使うライブラリのバージョンは `requirements-build.txt` で固定しています。
+- リリース手順: CHANGELOG を更新してコミット → `git tag v0.1.1` → `git push origin main v0.1.1`
 - exe にせずに動かす: `.venv\Scripts\python app.py` (この場合、`config.json` と `cache\` はプロジェクトフォルダに作られます)
 - ジェム入手データの更新: `python tools/update_gem_data.py`
 - 構成:
@@ -240,6 +242,8 @@ Delete the exe and the `config.json` and `cache\` created next to it. Nothing is
 
 ### Development
 - Build the exe: `build_exe.bat` (installs pywebview and PyInstaller into `.venv` and creates `dist\PoBLevelingCompanion.exe`; intermediate build files go to `build\`)
+- Automatic builds: GitHub Actions (`.github/workflows/build.yml`) builds the exe for every push to `main` and every pull request. Pushing a tag such as `v0.1.1` also attaches the exe and its SHA-256 checksum (`.sha256`) to the release of that tag. Build dependency versions are pinned in `requirements-build.txt`.
+- Releasing: update CHANGELOG and commit → `git tag v0.1.1` → `git push origin main v0.1.1`
 - Run without building: `.venv\Scripts\python app.py` (`config.json` and `cache\` are then created in the project folder)
 - Refresh gem acquisition data: `python tools/update_gem_data.py`
 - Layout:
