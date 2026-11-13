@@ -32,6 +32,9 @@ canvas.drag { cursor: grabbing; }
 #tAct { font-size: 15px; color: var(--muted); }
 #tAct b { color: var(--text); font-weight: 600; }
 #tState { font-size: 12px; color: var(--muted); }
+#updBox { display: none; align-items: center; gap: 6px; font-size: 12px; color: var(--new); border: 1px solid var(--new);
+  border-radius: 4px; padding: 2px 4px 2px 8px; }
+#updBox button { padding: 1px 8px; font-size: 12px; }
 #timerBar .tb { display: flex; gap: 6px; margin-left: auto; }
 #timerBar .tb button { padding: 4px 12px; }
 #tSplitsBtn.on { border-color: var(--accent); color: var(--accent); }
@@ -88,7 +91,7 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12
 </style>
 </head>
 <body>
-<div id="timerBar"><span id="tTotal">--:--</span><span id="tAct"></span><span id="tState"></span><span class="tb"><button id="tStart" data-i18n="tStart"></button><button id="tReset" data-i18n="tReset"></button><button id="tSplitsBtn" data-i18n="tSplits" data-i18n-title="timerTip"></button></span></div>
+<div id="timerBar"><span id="tTotal">--:--</span><span id="tAct"></span><span id="tState"></span><span id="updBox"><span id="updText"></span><button id="updApply" data-i18n="updApply"></button><button id="updOpen" data-i18n="updOpen"></button></span><span class="tb"><button id="tStart" data-i18n="tStart"></button><button id="tReset" data-i18n="tReset"></button><button id="tSplitsBtn" data-i18n="tSplits" data-i18n-title="timerTip"></button></span></div>
 <header id="hdr">
   <label><span data-i18n="build"></span> <select id="buildSel"></select></label>
   <button id="importBtn" data-i18n="pasteCode" data-i18n-title="pasteCodeTip"></button>
@@ -129,6 +132,7 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12
   <label data-i18n="cfgBuilds"></label><input id="cfgBuilds">
   <label data-i18n="cfgPob"></label><input id="cfgPob">
   <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="cfgAutoTimer" style="width:auto"> <span data-i18n="cfgAutoTimer"></span></label>
+  <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="cfgUpdate" style="width:auto"> <span data-i18n="cfgUpdate"></span></label>
   <label data-i18n="cfgGemLang"></label><select id="cfgGemLang"><option value="en">English</option><option value="ja">日本語</option></select>
   <label data-i18n="cfgLang"></label><select id="cfgLang"><option value="" data-i18n="langAuto"></option><option value="ja">日本語</option><option value="en">English</option></select>
   <div class="row"><button id="cfgCancel" data-i18n="cancel"></button><button id="cfgOk" data-i18n="save"></button></div>
@@ -148,7 +152,7 @@ const I18N = {
     cancel: "キャンセル", load: "読み込み", save: "保存",
     cfgLog: "Client.txt のパス", cfgLogPh: "空欄で自動検出", cfgChar: "キャラクター名 (空欄=どのキャラのレベルアップにも反応)",
     cfgBuilds: "PoB Builds フォルダ", cfgPob: "PoB インストールフォルダ (TreeData / Data の場所)",
-    cfgLang: "表示言語", cfgGemLang: "ジェム名の言語 (日本語名は公式トレードサイトのデータ)", langAuto: "自動 (システムの言語)",
+    cfgLang: "表示言語", cfgGemLang: "ジェム名の言語 (日本語名は公式トレードサイトのデータ)", cfgUpdate: "起動時に新しいバージョンを確認する (GitHub に接続)", updAvail: v => `新しいバージョン v${v} があります`, updApply: "更新", updOpen: "詳細", updWorking: "ダウンロード中...", updFailed: e => `更新に失敗しました: ${e}`, updConfirm: v => `v${v} に更新します。アプリは一度閉じて、更新後に自動で起動します。よろしいですか？`, langAuto: "自動 (システムの言語)",
     switched: l => `Lv ${l}: セットを切り替えました`, loadingTree: "ツリーデータ読み込み中...",
     points: n => `${n} ポイント`, noSkillSet: "スキルセットがありません", removedGems: "前セットから外れたジェム",
     epilogue: "エピローグ以降", reward: (q, npc) => `報酬: ${q} (${npc})`, buy: (npc, q) => `購入: ${npc} (「${q}」後)`,
@@ -171,7 +175,7 @@ const I18N = {
     cancel: "Cancel", load: "Load", save: "Save",
     cfgLog: "Path to Client.txt", cfgLogPh: "Leave empty to auto-detect", cfgChar: "Character name (empty = react to any character's level-up)",
     cfgBuilds: "PoB Builds folder", cfgPob: "PoB install folder (contains TreeData / Data)",
-    cfgLang: "Language", cfgGemLang: "Gem name language (Japanese names from the official trade site)", langAuto: "Auto (system language)",
+    cfgLang: "Language", cfgGemLang: "Gem name language (Japanese names from the official trade site)", cfgUpdate: "Check for a new version at start-up (connects to GitHub)", updAvail: v => `Version v${v} is available`, updApply: "Update", updOpen: "Details", updWorking: "Downloading...", updFailed: e => `Update failed: ${e}`, updConfirm: v => `Update to v${v}? The app closes and starts again after the update.`, langAuto: "Auto (system language)",
     switched: l => `Lv ${l}: switched sets`, loadingTree: "Loading tree data...",
     points: n => `${n} points`, noSkillSet: "No skill sets", removedGems: "Gems removed since the previous set",
     epilogue: "Epilogue / endgame", reward: (q, npc) => `Reward: ${q} (${npc})`, buy: (npc, q) => `Buy: ${npc} (after "${q}")`,
@@ -641,12 +645,12 @@ addEventListener("pywebviewready", async () => {
 $("onTopBtn").onclick = async () => showOnTop(await window.pywebview.api.toggle_on_top());
 $("settingsBtn").onclick = async () => {
   const c = await api("/api/config");
-  $("cfgLog").value = c.clientLog; $("cfgChar").value = c.characterName; $("cfgBuilds").value = c.buildsDir; $("cfgPob").value = c.pobDir; $("cfgLang").value = c.lang || ""; $("cfgAutoTimer").checked = !!c.timerAutoStart; $("cfgGemLang").value = c.gemLang || "en";
+  $("cfgLog").value = c.clientLog; $("cfgChar").value = c.characterName; $("cfgBuilds").value = c.buildsDir; $("cfgPob").value = c.pobDir; $("cfgLang").value = c.lang || ""; $("cfgAutoTimer").checked = !!c.timerAutoStart; $("cfgGemLang").value = c.gemLang || "en"; $("cfgUpdate").checked = c.updateCheck !== false;
   $("setDlg").showModal();
 };
 $("cfgCancel").onclick = () => $("setDlg").close();
 $("cfgOk").onclick = async () => {
-  await api("/api/config", { method: "POST", body: JSON.stringify({ clientLog: $("cfgLog").value, characterName: $("cfgChar").value, buildsDir: $("cfgBuilds").value, pobDir: $("cfgPob").value, lang: $("cfgLang").value, timerAutoStart: $("cfgAutoTimer").checked, gemLang: $("cfgGemLang").value }) });
+  await api("/api/config", { method: "POST", body: JSON.stringify({ clientLog: $("cfgLog").value, characterName: $("cfgChar").value, buildsDir: $("cfgBuilds").value, pobDir: $("cfgPob").value, lang: $("cfgLang").value, timerAutoStart: $("cfgAutoTimer").checked, gemLang: $("cfgGemLang").value, updateCheck: $("cfgUpdate").checked }) });
   S.gemLang = $("cfgGemLang").value;
   applyLang($("cfgLang").value);
   $("setDlg").close(); S.level = null; await loadBuilds();
@@ -694,6 +698,31 @@ $("tSplitsBtn").onclick = () => {
   renderTimer();
 };
 setInterval(renderTimer, 1000);
+
+// ---------------------------------------------------------------- update check (GitHub releases)
+async function checkUpdate() {
+  try {
+    if ((await api("/api/config")).updateCheck === false) return;
+    S.update = await api("/api/update");
+    if (!S.update || !S.update.hasUpdate) return;
+    $("updText").textContent = t("updAvail", S.update.latest);
+    // one-click update only in the desktop exe; elsewhere just link to the release page
+    $("updApply").style.display = S.update.canApply && window.pywebview ? "" : "none";
+    $("updBox").style.display = "inline-flex";
+    layout();
+  } catch (e) { console.warn("update check", e); }
+}
+$("updOpen").onclick = () => {
+  const url = (S.update && S.update.url) || "https://github.com/0z0zh/pob-leveling-companion/releases";
+  if (window.pywebview) window.pywebview.api.open_url(url); else window.open(url, "_blank");
+};
+$("updApply").onclick = async () => {
+  if (!S.update || !confirm(t("updConfirm", S.update.latest))) return;
+  $("updApply").disabled = true; $("updText").textContent = t("updWorking");
+  const r = await window.pywebview.api.apply_update();
+  if (!r || !r.ok) { $("updText").textContent = t("updFailed", (r && r.error) || "?"); $("updApply").disabled = false; }
+};
+addEventListener("pywebviewready", () => { if (S.update && S.update.hasUpdate && S.update.canApply) $("updApply").style.display = ""; });
 
 // pan / zoom / hover
 const cv = $("cv"); let drag = null;
@@ -752,6 +781,7 @@ addEventListener("resize", layout);
   setInterval(pollState, 1000);
   setInterval(pollBuild, 2000);
   try { S.gemSources = (await api("/api/gem_sources")).gems; renderSkills(); } catch (e) { console.warn("gem data", e); }
+  checkUpdate();
   try { S.gemJa = await api("/api/gem_names_ja"); S.gemLang = (await api("/api/config")).gemLang || "en"; renderSkills(); } catch (e) { console.warn("gem names", e); }
 })();
 </script>

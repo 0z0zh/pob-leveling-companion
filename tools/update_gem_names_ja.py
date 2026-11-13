@@ -5,8 +5,8 @@ Source: the gem lists of Grinding Gear Games' official trade site, in English an
   https://jp.pathofexile.com/api/trade/data/items
 Both lists contain the same gems in the same order, so entry N of one is entry N of the other.
 
-This is a developer script, run by hand after a league update (2 requests). The app itself never
-downloads anything; it only reads the generated JSON. The names are Grinding Gear Games' content.
+This is a developer script, run by hand after a league update (2 requests). The app never fetches
+these names itself; it only reads the generated JSON. The names are Grinding Gear Games' content.
 Run:  python tools/update_gem_names_ja.py
 """
 import json

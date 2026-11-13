@@ -9,4 +9,5 @@ This exe was built from the tagged source by GitHub Actions. / この exe は、
 
 ### Code signing policy
 See the [Code signing policy](https://github.com/{{REPO}}#code-signing-policy) (コード署名ポリシー) in the README.
-Privacy: this program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. / 本プログラムは、利用者が明示的に求めない限り、ネットワーク上の他のシステムに情報を送信しません。
+Privacy policy: Apart from checking GitHub for a newer release (which can be turned off in Settings), this program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. The update check sends a single request to api.github.com containing only the app version; updating downloads the new release from github.com.
+GitHub での新しいバージョンの確認 (設定で無効にできます) を除き、本プログラムは利用者が明示的に求めない限り、ネットワーク上の他のシステムに情報を送信しません。更新の確認で送るのは、アプリのバージョンを含む api.github.com へのリクエスト1回だけです。更新すると github.com から新しいリリースをダウンロードします。

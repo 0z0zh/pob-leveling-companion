@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 日本語
+#### 追加
+- 起動時に GitHub で新しいバージョンを確認し、ボタン一つで更新する機能 (ダウンロードした exe は SHA-256 で検証。設定で確認を無効にできます)
+
+#### 変更
+- プライバシーの記載を更新 (通信は GitHub での更新確認と更新時のダウンロードのみ)
+
+### English
+#### Added
+- Update check against GitHub at start-up and one-click update (the downloaded exe is verified with its SHA-256; the check can be turned off in Settings).
+
+#### Changed
+- Privacy statement updated: the only network access is the GitHub update check and the download when updating.
+
 ## [0.1.3] - 2026-11-13
 
 ### 日本語

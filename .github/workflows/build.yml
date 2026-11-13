@@ -29,7 +29,7 @@ jobs:
         run: python -m pip install -r requirements-build.txt
 
       - name: Check the sources compile
-        run: python -m py_compile server.py app.py tools/update_gem_data.py tools/update_gem_names_ja.py tools/make_version_info.py
+        run: python -m py_compile server.py app.py tools/update_gem_data.py tools/update_gem_names_ja.py tools/make_version_info.py updater.py
 
       - name: Version info (from VERSION)
         run: python tools/make_version_info.py
@@ -41,6 +41,7 @@ jobs:
           --version-file "${{ github.workspace }}\build\version_info.txt"
           --add-data "${{ github.workspace }}\static;static"
           --add-data "${{ github.workspace }}\data;data"
+          --add-data "${{ github.workspace }}\VERSION;."
           app.py
 
       - name: SHA-256 checksum

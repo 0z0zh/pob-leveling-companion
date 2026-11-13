@@ -26,6 +26,7 @@ Path of Exile のレベリング中に、Path of Building (PoB) のビルドの 
 - ゲームの手前に表示し続ける「最前面」表示
 - 日本語 / English 表示切替
 - ジェム名を英語 / 日本語で表示 (設定で切替。日本語名にマウスを乗せると英語名を表示)
+- 新しいバージョンの通知と、ボタン一つでの更新 (設定で無効にできます)
 
 ### 必要なもの
 - Windows 10 / 11
@@ -44,6 +45,11 @@ Path of Exile のレベリング中に、Path of Building (PoB) のビルドの 
 1. 「ビルド」から PoB の保存済みビルドを選びます (または「コード貼付」でエクスポートコードを読み込み)。
 2. ゲームでレベルが上がると、そのレベルに合うセットへ自動で切り替わります。
 3. セットを手動で選ぶと自動切替は OFF になります。ボタンで ON に戻せます。
+
+### 更新
+起動時に GitHub で新しいバージョンを確認し、あれば画面上部に「新しいバージョン vX.Y.Z があります」と表示します。
+「更新」を押すと、新しい exe をダウンロードして SHA-256 チェックサムで検証し、アプリを一度閉じて入れ替え、自動で起動し直します。
+「詳細」でリリースのページを開けます。確認は「設定」で無効にできます。
 
 ### セットの選び方
 - セット名から数値範囲を読み取り、「下限が現在のレベル以下のうち最も大きいもの」を選びます (例: Lv12 で `1-12` と `12-31` があれば `12-31`)。
@@ -86,6 +92,7 @@ Path of Exile のレベリング中に、Path of Building (PoB) のビルドの 
 - PoB の Builds フォルダ / インストールフォルダ
 - タイマーの自動スタート (既定は OFF)
 - ジェム名の言語 (英語 / 日本語。既定は英語)
+- 起動時に新しいバージョンを確認する (既定は ON)
 - 表示言語
 
 ### 注意
@@ -94,7 +101,8 @@ Path of Exile のレベリング中に、Path of Building (PoB) のビルドの 
 - exe は署名されていないため、SmartScreen や Windows Defender に警告されることがあります。
 
 ### プライバシー
-- 本ツールは **外部と一切通信しません**。読み込むのはローカルのファイル (`Client.txt`、PoB のビルド・データ) だけで、データをどこにも送信しません。
+- 本ツールの通信は **GitHub での新しいバージョンの確認と、更新時のダウンロードだけ**です。確認で送るのはアプリのバージョンを含む api.github.com へのリクエスト1回だけで、キャラクター名やビルドなどのデータは送りません。「設定」で確認を無効にすると、一切通信しません。
+- 読み込むのはローカルのファイル (`Client.txt`、PoB のビルド・データ) だけです。
 - 画面は PC 内だけで動くローカルサーバー (`127.0.0.1`) から表示しており、外部からはアクセスできません。
 
 ### トラブルシューティング
@@ -125,7 +133,7 @@ exe と、同じフォルダに作られる `config.json` と `cache\` を削除
 - リリース手順: `VERSION` と CHANGELOG を更新してコミット → `git tag v0.1.1` → `git push origin main v0.1.1` (タグと `VERSION` が一致しないとリリースは作られません。exe の製品名とバージョン情報は `VERSION` から埋め込まれます)
 - exe にせずに動かす: `.venv\Scripts\python app.py` (この場合、`config.json` と `cache\` はプロジェクトフォルダに作られます)
 - ジェム入手データの更新: `python tools/update_gem_data.py`
-- 日本語ジェム名の更新: `python tools/update_gem_names_ja.py` (公式トレードサイトの英語・日本語のジェム一覧を1回ずつ取得して `data/gem_names_ja.json` を作成。アプリ自体は通信しません)
+- 日本語ジェム名の更新: `python tools/update_gem_names_ja.py` (公式トレードサイトの英語・日本語のジェム一覧を1回ずつ取得して `data/gem_names_ja.json` を作成。アプリはこのデータを取りに行きません)
 - 構成:
   - `app.py`: 起動処理。ウィンドウを開き、`server.py` のサーバーを起動
   - `server.py`: ログ監視・タイマー・PoB データ解析・画面向け API
@@ -152,6 +160,7 @@ It reads the game log (`Client.txt`) and **switches the tree / skill set automat
 - "Always on top" to keep the window above the game
 - Japanese / English UI
 - Gem names in English or Japanese (switch in Settings; hover a Japanese name to see the English one)
+- New-version notice and one-click update (can be turned off in Settings)
 
 ### Requirements
 - Windows 10 / 11
@@ -170,6 +179,11 @@ Download the latest `PoBLevelingCompanion.exe` from [Releases](https://github.co
 1. Pick a saved PoB build from "Build" (or load an export code with "Paste code").
 2. When you level up in game, the matching set is selected automatically.
 3. Choosing a set by hand turns auto switching off; click the button to turn it back on.
+
+### Updating
+At start-up the app checks GitHub for a newer release and, if there is one, shows "Version vX.Y.Z is available" at the top.
+"Update" downloads the new exe, verifies it against the release's SHA-256 checksum, closes the app, swaps the exe and starts it again.
+"Details" opens the release page. The check can be turned off in Settings.
 
 ### How sets are chosen
 - A level range is read from each set name, and the set whose lower bound is the highest one not above your level is used (e.g. at Lv 12 with `1-12` and `12-31`, `12-31` wins).
@@ -212,6 +226,7 @@ Change them in "Settings"; they are saved to `config.json` next to the exe.
 - PoB Builds folder / install folder
 - Start the timer automatically (off by default)
 - Gem name language (English / Japanese; English by default)
+- Check for a new version at start-up (on by default)
 - Language
 
 ### Notes
@@ -220,7 +235,8 @@ Change them in "Settings"; they are saved to `config.json` next to the exe.
 - The exe is unsigned, so SmartScreen or Windows Defender may warn about it.
 
 ### Privacy
-- The tool **never connects to the internet**. It only reads local files (`Client.txt`, your PoB builds and PoB data) and sends nothing anywhere.
+- The only network access is **checking GitHub for a newer release and downloading it when you update**. The check is a single request to api.github.com containing only the app version; no character names, builds or other data are sent. With the check turned off in Settings, the tool never connects to the internet.
+- It only reads local files (`Client.txt`, your PoB builds and PoB data).
 - The UI is served by a local server on `127.0.0.1` that cannot be reached from other machines.
 
 ### Troubleshooting
@@ -251,7 +267,7 @@ Delete the exe and the `config.json` and `cache\` created next to it. Nothing is
 - Releasing: update `VERSION` and CHANGELOG and commit → `git tag v0.1.1` → `git push origin main v0.1.1` (the release is refused if the tag does not match `VERSION`; the exe's product name and version metadata come from `VERSION`)
 - Run without building: `.venv\Scripts\python app.py` (`config.json` and `cache\` are then created in the project folder)
 - Refresh gem acquisition data: `python tools/update_gem_data.py`
-- Refresh Japanese gem names: `python tools/update_gem_names_ja.py` (fetches the English and Japanese gem lists of the official trade site once each and writes `data/gem_names_ja.json`; the app itself never connects to the internet)
+- Refresh Japanese gem names: `python tools/update_gem_names_ja.py` (fetches the English and Japanese gem lists of the official trade site once each and writes `data/gem_names_ja.json`; the app never fetches this data itself)
 - Layout:
   - `app.py`: entry point; opens the window and starts the server in `server.py`
   - `server.py`: log watcher, timer, PoB data parsing and the API used by the UI
@@ -271,9 +287,9 @@ Free code signing provided by [SignPath.io](https://about.signpath.io/), certifi
 - Team roles:
   - Committers and reviewers: [0z0zh](https://github.com/0z0zh)
   - Approvers: [0z0zh](https://github.com/0z0zh)
-- Privacy policy: This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
+- Privacy policy: Apart from checking GitHub for a newer release (which can be turned off in Settings), this program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. The update check sends a single request to api.github.com containing only the app version; updating downloads the new release from github.com.
 
-コード署名ポリシー (日本語): 上記のとおり、署名は SignPath.io が無償で提供し、証明書は SignPath Foundation が発行します (申請はこれからで、有効になるまでリリースの exe は署名なしです)。署名する exe は本リポジトリから GitHub Actions でビルドしたものだけで、署名のたびに承認者が手動で承認します。本プログラムは、利用者が明示的に求めない限り、ネットワーク上の他のシステムに情報を送信しません。
+コード署名ポリシー (日本語): 上記のとおり、署名は SignPath.io が無償で提供し、証明書は SignPath Foundation が発行します (申請はこれからで、有効になるまでリリースの exe は署名なしです)。署名する exe は本リポジトリから GitHub Actions でビルドしたものだけで、署名のたびに承認者が手動で承認します。GitHub での新しいバージョンの確認 (設定で無効にできます) を除き、本プログラムは利用者が明示的に求めない限り、ネットワーク上の他のシステムに情報を送信しません。更新の確認で送るのは、アプリのバージョンを含む api.github.com へのリクエスト1回だけです。更新すると github.com から新しいリリースをダウンロードします。
 
 ## License
 

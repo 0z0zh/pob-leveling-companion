@@ -6,11 +6,15 @@ Build the exe with build_exe.bat.
 """
 import ctypes
 import os
+import threading
 from ctypes import wintypes
+
+import webbrowser
 
 import webview
 
 import server
+import updater
 
 TITLE = "PoB Leveling Companion"
 DEFAULT_WINDOW = {"width": 1400, "height": 850, "x": None, "y": None, "onTop": False}
@@ -59,9 +63,22 @@ class Api:
 
     def __init__(self, on_top):
         self._on_top = on_top
+        self._window = None  # set after the window is created (underscore: not exposed to the page)
 
     def get_on_top(self):
         return self._on_top
+
+    def open_url(self, url):
+        # links open in the normal browser, not inside the app window
+        if str(url).startswith("https://github.com/"):
+            webbrowser.open(url)
+
+    def apply_update(self):
+        result = updater.apply()
+        if result.get("ok"):
+            # the update script swaps the exe once this process has exited
+            threading.Timer(0.8, self._window.destroy).start()
+        return result
 
     def toggle_on_top(self):
         if _set_topmost(not self._on_top):
@@ -90,6 +107,7 @@ def main():
         except Exception:  # noqa: BLE001
             pass
 
+    api._window = window
     window.events.closing += on_closing
     webview.start()
 

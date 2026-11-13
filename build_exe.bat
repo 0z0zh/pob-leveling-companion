@@ -12,6 +12,7 @@ rem "python -m PyInstaller" (not pyinstaller.exe) keeps working after the folder
   --version-file "%~dp0build\version_info.txt" ^
   --add-data "%~dp0static;static" ^
   --add-data "%~dp0data;data" ^
+  --add-data "%~dp0VERSION;." ^
   app.py
 echo.
 echo Done: dist\PoBLevelingCompanion.exe

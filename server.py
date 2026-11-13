@@ -101,6 +101,7 @@ DEFAULT_CONFIG = {
     "lang": "",  # "" = follow the system language
     "timerAutoStart": False,  # start the run timer automatically on a new character
     "gemLang": "en",  # language of gem names: "en" or "ja"
+    "updateCheck": True,  # check GitHub for a newer release at start-up
     "timerStart": None,  # wall-clock time of the manual timer start
 }
 
@@ -755,6 +756,9 @@ class Handler(BaseHTTPRequestHandler):
                 })
             if u.path == "/api/config":
                 return self._send(200, CONFIG)
+            if u.path == "/api/update":
+                import updater
+                return self._send(200, updater.public(updater.check(force=q.get("force") == "1")))
             if u.path == "/api/gem_names_ja":
                 return self._send(200, (DATA_DIR / "gem_names_ja.json").read_bytes())
             if u.path == "/api/gem_sources":
@@ -792,7 +796,7 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/import":
                 return self._send(200, parse_build(decode_export_code(body["code"])))
             if u.path == "/api/config":
-                for k in ("buildsDir", "clientLog", "characterName", "pobDir", "lang", "timerAutoStart", "gemLang"):
+                for k in ("buildsDir", "clientLog", "characterName", "pobDir", "lang", "timerAutoStart", "gemLang", "updateCheck"):
                     if k in body:
                         CONFIG[k] = body[k]
                 save_config(CONFIG)
