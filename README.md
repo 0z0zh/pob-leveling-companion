@@ -25,6 +25,7 @@ Path of Exile のレベリング中に、Path of Building (PoB) のビルドの 
 - Act ごとのタイムを計るレベリングタイマー (ゲームを閉じていた時間は除外)
 - ゲームの手前に表示し続ける「最前面」表示
 - 日本語 / English 表示切替
+- ジェム名を英語 / 日本語で表示 (設定で切替。日本語名にマウスを乗せると英語名を表示)
 
 ### 必要なもの
 - Windows 10 / 11
@@ -84,6 +85,7 @@ Path of Exile のレベリング中に、Path of Building (PoB) のビルドの 
 - キャラクター名 (空欄ならどのキャラのレベルアップにも反応)
 - PoB の Builds フォルダ / インストールフォルダ
 - タイマーの自動スタート (既定は OFF)
+- ジェム名の言語 (英語 / 日本語。既定は英語)
 - 表示言語
 
 ### 注意
@@ -123,6 +125,7 @@ exe と、同じフォルダに作られる `config.json` と `cache\` を削除
 - リリース手順: `VERSION` と CHANGELOG を更新してコミット → `git tag v0.1.1` → `git push origin main v0.1.1` (タグと `VERSION` が一致しないとリリースは作られません。exe の製品名とバージョン情報は `VERSION` から埋め込まれます)
 - exe にせずに動かす: `.venv\Scripts\python app.py` (この場合、`config.json` と `cache\` はプロジェクトフォルダに作られます)
 - ジェム入手データの更新: `python tools/update_gem_data.py`
+- 日本語ジェム名の更新: `python tools/update_gem_names_ja.py` (公式トレードサイトの英語・日本語のジェム一覧を1回ずつ取得して `data/gem_names_ja.json` を作成。アプリ自体は通信しません)
 - 構成:
   - `app.py`: 起動処理。ウィンドウを開き、`server.py` のサーバーを起動
   - `server.py`: ログ監視・タイマー・PoB データ解析・画面向け API
@@ -148,6 +151,7 @@ It reads the game log (`Client.txt`) and **switches the tree / skill set automat
 - Leveling timer with per-act splits (time while the game is closed is excluded)
 - "Always on top" to keep the window above the game
 - Japanese / English UI
+- Gem names in English or Japanese (switch in Settings; hover a Japanese name to see the English one)
 
 ### Requirements
 - Windows 10 / 11
@@ -207,6 +211,7 @@ Change them in "Settings"; they are saved to `config.json` next to the exe.
 - Character name (empty = react to any character's level-up)
 - PoB Builds folder / install folder
 - Start the timer automatically (off by default)
+- Gem name language (English / Japanese; English by default)
 - Language
 
 ### Notes
@@ -246,6 +251,7 @@ Delete the exe and the `config.json` and `cache\` created next to it. Nothing is
 - Releasing: update `VERSION` and CHANGELOG and commit → `git tag v0.1.1` → `git push origin main v0.1.1` (the release is refused if the tag does not match `VERSION`; the exe's product name and version metadata come from `VERSION`)
 - Run without building: `.venv\Scripts\python app.py` (`config.json` and `cache\` are then created in the project folder)
 - Refresh gem acquisition data: `python tools/update_gem_data.py`
+- Refresh Japanese gem names: `python tools/update_gem_names_ja.py` (fetches the English and Japanese gem lists of the official trade site once each and writes `data/gem_names_ja.json`; the app itself never connects to the internet)
 - Layout:
   - `app.py`: entry point; opens the window and starts the server in `server.py`
   - `server.py`: log watcher, timer, PoB data parsing and the API used by the UI
@@ -278,4 +284,6 @@ Free code signing provided by [SignPath.io](https://about.signpath.io/), certifi
 - Passive tree and gem data are read at runtime from your local [Path of Building Community](https://github.com/PathOfBuildingCommunity/PathOfBuilding) installation (MIT License) and are not redistributed.
 - See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for full license texts.
 
-Path of Exile is a trademark of Grinding Gear Games.
+- Japanese gem names (`data/gem_names_ja.json`) are generated from the gem lists of Grinding Gear Games' official trade site (www.pathofexile.com / jp.pathofexile.com). They are Grinding Gear Games' content; this project has not been reviewed, endorsed or approved by Grinding Gear Games.
+
+Path of Exile is a trademark of Grinding Gear Games. Path of Exile, in-game names, items and related game data belong to Grinding Gear Games.

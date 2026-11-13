@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 日本語
+#### 追加
+- ジェム名を英語 / 日本語で切り替えて表示する設定 (日本語名は公式トレードサイトのデータから生成。既定は英語)
+
+### English
+#### Added
+- Setting to show gem names in English or Japanese (Japanese names generated from the official trade site's data; English by default).
+
 ## [0.1.2] - 2026-11-13
 
 ### 日本語

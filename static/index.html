@@ -129,6 +129,7 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12
   <label data-i18n="cfgBuilds"></label><input id="cfgBuilds">
   <label data-i18n="cfgPob"></label><input id="cfgPob">
   <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="cfgAutoTimer" style="width:auto"> <span data-i18n="cfgAutoTimer"></span></label>
+  <label data-i18n="cfgGemLang"></label><select id="cfgGemLang"><option value="en">English</option><option value="ja">日本語</option></select>
   <label data-i18n="cfgLang"></label><select id="cfgLang"><option value="" data-i18n="langAuto"></option><option value="ja">日本語</option><option value="en">English</option></select>
   <div class="row"><button id="cfgCancel" data-i18n="cancel"></button><button id="cfgOk" data-i18n="save"></button></div>
 </dialog>
@@ -147,7 +148,7 @@ const I18N = {
     cancel: "キャンセル", load: "読み込み", save: "保存",
     cfgLog: "Client.txt のパス", cfgLogPh: "空欄で自動検出", cfgChar: "キャラクター名 (空欄=どのキャラのレベルアップにも反応)",
     cfgBuilds: "PoB Builds フォルダ", cfgPob: "PoB インストールフォルダ (TreeData / Data の場所)",
-    cfgLang: "表示言語", langAuto: "自動 (システムの言語)",
+    cfgLang: "表示言語", cfgGemLang: "ジェム名の言語 (日本語名は公式トレードサイトのデータ)", langAuto: "自動 (システムの言語)",
     switched: l => `Lv ${l}: セットを切り替えました`, loadingTree: "ツリーデータ読み込み中...",
     points: n => `${n} ポイント`, noSkillSet: "スキルセットがありません", removedGems: "前セットから外れたジェム",
     epilogue: "エピローグ以降", reward: (q, npc) => `報酬: ${q} (${npc})`, buy: (npc, q) => `購入: ${npc} (「${q}」後)`,
@@ -170,7 +171,7 @@ const I18N = {
     cancel: "Cancel", load: "Load", save: "Save",
     cfgLog: "Path to Client.txt", cfgLogPh: "Leave empty to auto-detect", cfgChar: "Character name (empty = react to any character's level-up)",
     cfgBuilds: "PoB Builds folder", cfgPob: "PoB install folder (contains TreeData / Data)",
-    cfgLang: "Language", langAuto: "Auto (system language)",
+    cfgLang: "Language", cfgGemLang: "Gem name language (Japanese names from the official trade site)", langAuto: "Auto (system language)",
     switched: l => `Lv ${l}: switched sets`, loadingTree: "Loading tree data...",
     points: n => `${n} points`, noSkillSet: "No skill sets", removedGems: "Gems removed since the previous set",
     epilogue: "Epilogue / endgame", reward: (q, npc) => `Reward: ${q} (${npc})`, buy: (npc, q) => `Buy: ${npc} (after "${q}")`,
@@ -487,18 +488,23 @@ function renderSkills() {
     for (const gem of g.gems) {
       const added = prevSet && !prevNames.has(gem.name);
       html += `<div class="gem ${gem.support ? "support" : ""} ${gem.enabled ? "" : "off"} ${added ? "added" : ""}">
-        <span class="dot" style="background:var(--gem-${gem.color})"></span><span class="name">${esc(gem.name)}</span>
+        <span class="dot" style="background:var(--gem-${gem.color})"></span><span class="name" ${gemTitle(gem.name)}>${esc(gemName(gem.name))}</span>
         <span class="lv">${gem.level}${+gem.quality ? " / " + gem.quality + "%" : ""}</span></div>`;
     }
     html += `</div>`;
   }
   if (prevSet) {
     const removed = [...prevNames].filter(n => !curNames.has(n));
-    if (removed.length) html += `<div class="removed">${t("removedGems")}: ${removed.map(n => `<span>${esc(n)}</span>`).join(", ")}</div>`;
+    if (removed.length) html += `<div class="removed">${t("removedGems")}: ${removed.map(n => `<span ${gemTitle(n)}>${esc(gemName(n))}</span>`).join(", ")}</div>`;
   }
   html += renderAcquire(set);
   side.innerHTML = html;
 }
+
+// ---------------------------------------------------------------- gem names (English / Japanese)
+// Japanese names come from data/gem_names_ja.json (GGG's official trade data); unknown names stay English
+function gemName(en) { return S.gemLang === "ja" && S.gemJa ? (S.gemJa[String(en).toLowerCase()] || en) : en; }
+function gemTitle(en) { return gemName(en) !== en ? `title="${esc(en)}"` : ""; }  // hover shows the English name
 
 // ---------------------------------------------------------------- gem acquisition by act
 $("side").addEventListener("click", e => {
@@ -563,11 +569,11 @@ function renderAcquire(set) {
     const state = cur == null ? "" : act < cur ? "past" : act === cur ? "now" : "";
     html += `<div class="acq ${state}"><div class="acq-act">${ACT_NAME(act)}${state === "now" ? t("nowMark") : state === "past" ? t("available") : ""}</div>`;
     for (const { gem, opts } of byAct.get(act)) {
-      html += `<div class="acq-row"><span class="dot" style="background:var(--gem-${gem.color})"></span><div><div>${esc(gem.name)}</div>${opts.map(o => `<div class="acq-src">${esc(o)}</div>`).join("")}</div></div>`;
+      html += `<div class="acq-row"><span class="dot" style="background:var(--gem-${gem.color})"></span><div><div ${gemTitle(gem.name)}>${esc(gemName(gem.name))}</div>${opts.map(o => `<div class="acq-src">${esc(o)}</div>`).join("")}</div></div>`;
     }
     html += `</div>`;
   }
-  if (showAll && unknown.length) html += `<div class="acq"><div class="acq-act">${t("notObtainable")}</div>${unknown.map(g => `<div class="acq-row"><span class="dot" style="background:var(--gem-${g.color})"></span><div>${esc(g.name)}</div></div>`).join("")}</div>`;
+  if (showAll && unknown.length) html += `<div class="acq"><div class="acq-act">${t("notObtainable")}</div>${unknown.map(g => `<div class="acq-row"><span class="dot" style="background:var(--gem-${g.color})"></span><div ${gemTitle(g.name)}>${esc(gemName(g.name))}</div></div>`).join("")}</div>`;
   return html;
 }
 function renderSelectors() {
@@ -635,12 +641,13 @@ addEventListener("pywebviewready", async () => {
 $("onTopBtn").onclick = async () => showOnTop(await window.pywebview.api.toggle_on_top());
 $("settingsBtn").onclick = async () => {
   const c = await api("/api/config");
-  $("cfgLog").value = c.clientLog; $("cfgChar").value = c.characterName; $("cfgBuilds").value = c.buildsDir; $("cfgPob").value = c.pobDir; $("cfgLang").value = c.lang || ""; $("cfgAutoTimer").checked = !!c.timerAutoStart;
+  $("cfgLog").value = c.clientLog; $("cfgChar").value = c.characterName; $("cfgBuilds").value = c.buildsDir; $("cfgPob").value = c.pobDir; $("cfgLang").value = c.lang || ""; $("cfgAutoTimer").checked = !!c.timerAutoStart; $("cfgGemLang").value = c.gemLang || "en";
   $("setDlg").showModal();
 };
 $("cfgCancel").onclick = () => $("setDlg").close();
 $("cfgOk").onclick = async () => {
-  await api("/api/config", { method: "POST", body: JSON.stringify({ clientLog: $("cfgLog").value, characterName: $("cfgChar").value, buildsDir: $("cfgBuilds").value, pobDir: $("cfgPob").value, lang: $("cfgLang").value, timerAutoStart: $("cfgAutoTimer").checked }) });
+  await api("/api/config", { method: "POST", body: JSON.stringify({ clientLog: $("cfgLog").value, characterName: $("cfgChar").value, buildsDir: $("cfgBuilds").value, pobDir: $("cfgPob").value, lang: $("cfgLang").value, timerAutoStart: $("cfgAutoTimer").checked, gemLang: $("cfgGemLang").value }) });
+  S.gemLang = $("cfgGemLang").value;
   applyLang($("cfgLang").value);
   $("setDlg").close(); S.level = null; await loadBuilds();
 };
@@ -745,6 +752,7 @@ addEventListener("resize", layout);
   setInterval(pollState, 1000);
   setInterval(pollBuild, 2000);
   try { S.gemSources = (await api("/api/gem_sources")).gems; renderSkills(); } catch (e) { console.warn("gem data", e); }
+  try { S.gemJa = await api("/api/gem_names_ja"); S.gemLang = (await api("/api/config")).gemLang || "en"; renderSkills(); } catch (e) { console.warn("gem names", e); }
 })();
 </script>
 </body>
