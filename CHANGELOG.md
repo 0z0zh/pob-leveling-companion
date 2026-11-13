@@ -1,15 +1,36 @@
-# Changelog
+# Changelog / 更新履歴
 
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+このプロジェクトの主な変更点を記録しています。
+書式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に、バージョン番号は [セマンティック バージョニング](https://semver.org/lang/ja/) に準拠しています。
+
 ## [Unreleased]
 
-## [0.1.0] - not yet released
+## [0.1.0] - 2026-11-13
+
+### 日本語
+
+最初の公開版です。
+
+#### 追加
+- Path of Building のビルドのパッシブツリーとスキルジェムを1画面で表示 (アセンダンシー / ブラッドラインはツリーの下に表示)
+- `Client.txt` を読み取り、レベルアップに合わせて Tree / Skill のセットを自動で切り替え (英語版・日本語版のゲームクライアントに対応)
+- `1-11`、`Level 12-31`、`12 to 33`、`Lvl 90`、`68+` などのレベル範囲を含むセット名に対応
+- 前のセットとの差分表示 (追加・削除されたノードとジェム)
+- 現在の Act で入手できるジェム (クエスト報酬 / 購入) を、ゲーム内キャラクターのクラスに合わせて表示
+- Act ごとのタイムを計るレベリングタイマー (既定は手動スタート、自動スタートも可能。ゲームを閉じていた時間は除外)
+- PoB でビルドを保存すると自動で反映、PoB エクスポートコードの貼り付けにも対応
+- デスクトップアプリ (`PoBLevelingCompanion.exe`) と「最前面」表示
+- 日本語 / English の表示切替
+- `Client.txt` の自動検出 (Steam / スタンドアロン / Epic)
+
+### English
 
 First public version.
 
-### Added
+#### Added
 - Passive tree and skill gems of a Path of Building build on one screen, with the ascendancy and bloodline below the tree.
 - Automatic tree / skill set switching on level-up, read from `Client.txt` (English and Japanese game clients).
 - Set names with level ranges such as `1-11`, `Level 12-31`, `12 to 33`, `Lvl 90` and `68+`.
@@ -20,3 +41,6 @@ First public version.
 - Desktop app (`PoBLevelingCompanion.exe`) with an "always on top" option.
 - Japanese / English UI.
 - Automatic detection of `Client.txt` (Steam, standalone and Epic installs).
+
+[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/0z0zh/pob-leveling-companion/releases/tag/v0.1.0
