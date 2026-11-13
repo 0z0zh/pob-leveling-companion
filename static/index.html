@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PoB Leveling Companion</title>
+<style>
+:root {
+  --bg: #0e0f12; --panel: #17191e; --panel2: #1f2229; --line: #2c3039; --text: #d9d6cf; --muted: #8a8f99;
+  --accent: #d6a648; --new: #4fd17a; --gem-r: #e2635b; --gem-g: #6fcf63; --gem-b: #6b9cf0; --gem-w: #cfcfcf;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.4 "Segoe UI", "Yu Gothic UI", sans-serif; overflow: hidden; }
+header { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--line); }
+header label { color: var(--muted); display: flex; align-items: center; gap: 6px; }
+select, input, button, textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; font: inherit; }
+button { cursor: pointer; } button:hover { border-color: var(--accent); }
+select { max-width: 260px; }
+#levelBox { display: flex; align-items: baseline; gap: 6px; padding: 2px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel2); }
+#levelBox b { font-size: 20px; color: var(--accent); }
+#auto.on { border-color: var(--new); color: var(--new); }
+.spacer { flex: 1; }
+main { display: flex; height: calc(100% - var(--hdr, 50px)); }
+#treeWrap { position: relative; flex: 1; min-width: 0; }
+canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+canvas.drag { cursor: grabbing; }
+#timerBar { display: flex; align-items: center; gap: 18px; padding: 6px 14px; background: #121318; border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums; }
+#tTotal { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--muted); letter-spacing: .5px; min-width: 7ch; }
+#timerBar.ticking #tTotal { color: var(--accent); }
+#timerBar.finished #tTotal { color: var(--new); }
+#tAct { font-size: 15px; color: var(--muted); }
+#tAct b { color: var(--text); font-weight: 600; }
+#tState { font-size: 12px; color: var(--muted); }
+#timerBar .tb { display: flex; gap: 6px; margin-left: auto; }
+#timerBar .tb button { padding: 4px 12px; }
+#tSplitsBtn.on { border-color: var(--accent); color: var(--accent); }
+#splits { position: absolute; right: 10px; top: 8px; min-width: 210px; background: rgba(20,22,27,.95); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px 10px; display: none; z-index: 5; font-variant-numeric: tabular-nums; }
+#splits h4 { margin: 0 0 6px; font-size: 12px; color: var(--muted); font-weight: 600; }
+#splits .row { display: flex; justify-content: space-between; gap: 16px; padding: 1px 0; }
+#splits .row.cur { color: var(--accent); }
+#splits .row .at { color: var(--muted); font-size: 11px; }
+#splits .none { color: var(--muted); font-size: 12px; }
+#splits .sum { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 4px; font-weight: 600; }
+#treeInfo { position: absolute; left: 10px; top: 8px; background: rgba(14,15,18,.8); padding: 4px 8px; border-radius: 4px; pointer-events: none; }
+#treeInfo .new { color: var(--new); }
+#legend { position: absolute; left: 10px; bottom: 8px; color: var(--muted); font-size: 12px; background: rgba(14,15,18,.8); padding: 4px 8px; border-radius: 4px; }
+#legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin: 0 4px 0 10px; vertical-align: -1px; }
+#tip { position: fixed; pointer-events: none; display: none; max-width: 360px; background: #0b0c0f; border: 1px solid var(--accent); padding: 6px 10px; border-radius: 4px; z-index: 10; }
+#tip h4 { margin: 0 0 4px; color: var(--accent); font-size: 14px; }
+#tip div { color: #8fb3ff; }
+#resizer { width: 5px; cursor: col-resize; background: var(--line); }
+#side { width: var(--side, 380px); overflow-y: auto; background: var(--panel); padding: 10px; }
+#side h3 { margin: 0 0 8px; font-size: 14px; color: var(--accent); }
+.group { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; }
+.group.disabled { opacity: .45; }
+.group .hdr { font-size: 11px; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; }
+.gem { display: flex; align-items: center; gap: 6px; padding: 1px 0; }
+.gem .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.gem.support { padding-left: 14px; }
+.gem.off { text-decoration: line-through; opacity: .5; }
+.gem .lv { margin-left: auto; color: var(--muted); font-size: 11px; white-space: nowrap; }
+.gem.added .name { color: var(--new); }
+.gem.added .name::after { content: " NEW"; font-size: 10px; }
+.removed { margin-top: 10px; color: var(--muted); font-size: 12px; }
+.removed span { text-decoration: line-through; }
+.acq { border-left: 3px solid var(--line); padding: 2px 0 4px 8px; margin-bottom: 8px; }
+.acq.now { border-left-color: var(--accent); background: rgba(214,166,72,.06); }
+.acq.past { opacity: .5; }
+.acq-act { font-weight: 600; color: var(--accent); margin-bottom: 2px; }
+.acq:not(.now) .acq-act { color: var(--muted); }
+.acq-row { display: flex; gap: 6px; align-items: baseline; padding: 1px 0; }
+.acq-row .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.acq-src { color: var(--muted); font-size: 11px; }
+dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; width: min(560px, 92vw); }
+dialog::backdrop { background: rgba(0,0,0,.6); }
+dialog label { display: block; margin: 8px 0 2px; color: var(--muted); }
+dialog input, dialog textarea { width: 100%; }
+dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+#toast { position: fixed; left: 50%; top: 60px; transform: translateX(-50%); background: var(--new); color: #000; padding: 8px 16px; border-radius: 6px; font-weight: 600; display: none; z-index: 20; }
+.err { color: #ff7b72; }
+</style>
+</head>
+<body>
+<div id="timerBar"><span id="tTotal">--:--</span><span id="tAct"></span><span id="tState"></span><span class="tb"><button id="tStart" data-i18n="tStart"></button><button id="tReset" data-i18n="tReset"></button><button id="tSplitsBtn" data-i18n="tSplits" data-i18n-title="timerTip"></button></span></div>
+<header id="hdr">
+  <label><span data-i18n="build"></span> <select id="buildSel"></select></label>
+  <button id="importBtn" data-i18n="pasteCode" data-i18n-title="pasteCodeTip"></button>
+  <div id="levelBox"><span class="muted">Lv</span><b id="lvl">-</b><span id="charName" style="color:var(--muted);margin-left:4px"></span><span id="actName" style="color:var(--accent)"></span></div>
+  <button id="auto" class="on" data-i18n-title="autoTip"></button>
+  <label>Tree <select id="treeSel"></select></label>
+  <label>Skills <select id="skillSel"></select></label>
+  <label data-i18n-title="diffTip"><input type="checkbox" id="diffChk" checked> <span data-i18n="diff"></span></label>
+  <span class="spacer"></span>
+  <span id="status" class="err"></span>
+  <button id="onTopBtn" style="display:none" data-i18n-title="onTopTip"></button>
+  <button id="settingsBtn" data-i18n="settings"></button>
+</header>
+<main>
+  <div id="treeWrap">
+    <canvas id="cv"></canvas>
+    <div id="treeInfo"></div>
+    <div id="splits"><div id="splitsBody"></div></div>
+    <div id="legend"><i style="background:var(--accent)"></i><span data-i18n="lgAlloc"></span><i style="background:var(--new)"></i><span data-i18n="lgAdded"></span><i style="background:#c0392b"></i><span data-i18n="lgRemoved"></span><i style="background:#555"></i><span data-i18n="lgOff"></span> &nbsp; <span data-i18n="lgHelp"></span></div>
+  </div>
+  <div id="resizer"></div>
+  <aside id="side"></aside>
+</main>
+<div id="tip"></div>
+<div id="toast"></div>
+
+<dialog id="importDlg">
+  <h3 data-i18n="importTitle"></h3>
+  <textarea id="importCode" rows="6" data-i18n-ph="importPh"></textarea>
+  <div id="importErr" class="err"></div>
+  <div class="row"><button id="importCancel" data-i18n="cancel"></button><button id="importOk" data-i18n="load"></button></div>
+</dialog>
+
+<dialog id="setDlg">
+  <h3 data-i18n="settings"></h3>
+  <label data-i18n="cfgLog"></label><input id="cfgLog" data-i18n-ph="cfgLogPh">
+  <label data-i18n="cfgChar"></label><input id="cfgChar">
+  <label data-i18n="cfgBuilds"></label><input id="cfgBuilds">
+  <label data-i18n="cfgPob"></label><input id="cfgPob">
+  <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="cfgAutoTimer" style="width:auto"> <span data-i18n="cfgAutoTimer"></span></label>
+  <label data-i18n="cfgLang"></label><select id="cfgLang"><option value="" data-i18n="langAuto"></option><option value="ja">日本語</option><option value="en">English</option></select>
+  <div class="row"><button id="cfgCancel" data-i18n="cancel"></button><button id="cfgOk" data-i18n="save"></button></div>
+</dialog>
+
+<script>
+const $ = id => document.getElementById(id);
+// ---------------------------------------------------------------- i18n
+const I18N = {
+  ja: {
+    build: "ビルド", pasteCode: "コード貼付", pasteCodeTip: "PoBのエクスポートコードを貼り付け",
+    auto: "自動切替", autoTip: "レベルアップで自動切替", diff: "差分表示", diffTip: "ひとつ前のセットとの差分を緑/赤で表示",
+    onTop: "最前面", onTopTip: "このウィンドウを常にゲームより手前に表示", settings: "設定",
+    lgAlloc: "取得済み", lgAdded: "前セットから追加", lgRemoved: "前セットから削除", lgOff: "未取得",
+    lgHelp: "ホイール:ズーム / ドラッグ:移動 / ダブルクリック:全体表示",
+    importTitle: "PoB エクスポートコード", importPh: "Path of Building > Import/Export Build > Generate でコピーしたコード",
+    cancel: "キャンセル", load: "読み込み", save: "保存",
+    cfgLog: "Client.txt のパス", cfgLogPh: "空欄で自動検出", cfgChar: "キャラクター名 (空欄=どのキャラのレベルアップにも反応)",
+    cfgBuilds: "PoB Builds フォルダ", cfgPob: "PoB インストールフォルダ (TreeData / Data の場所)",
+    cfgLang: "表示言語", langAuto: "自動 (システムの言語)",
+    switched: l => `Lv ${l}: セットを切り替えました`, loadingTree: "ツリーデータ読み込み中...",
+    points: n => `${n} ポイント`, noSkillSet: "スキルセットがありません", removedGems: "前セットから外れたジェム",
+    epilogue: "エピローグ以降", reward: (q, npc) => `報酬: ${q} (${npc})`, buy: (npc, q) => `購入: ${npc} (「${q}」後)`,
+    acqTitle: "ジェム入手タイミング", now: "現在", nowMark: " ← 現在", available: " (入手可能)",
+    noneInAct: a => `${a} で入手するジェムはありません`, notObtainable: "クエスト/購入では入手不可 (ドロップ・交換など)",
+    startGem: "初期装備", chestGem: "最初の宝箱",
+    noServer: "サーバーに接続できません", buildReloaded: "ビルドファイルの更新を反映しました",
+    ERR_LOG_NOT_SET: "Client.txt が見つかりません。設定でパスを指定してください",
+    ERR_LOG_NOT_FOUND: p => `ログファイルが見つかりません: ${p}`,
+    ERR_URL_NOT_SUPPORTED: "URLはサポートしていません。PoBの Import/Export > Generate で得られるコードを貼り付けてください",
+    timerTip: "Act ごとのタイムを表示/非表示", splitsTitle: "Act ごとのタイム", total: "合計", stopped: "停止中 (ゲーム終了中)", finished: "完走", splitAt: t => `開始 ${t}`, tStart: "スタート", tReset: "リセット", tSplits: "Act 別タイム", notRunning: "未計測。準備ができたらスタートを押してください", confirmReset: "タイマーをリセットしますか？", confirmRestart: "計測中のタイムを破棄して、今からスタートし直しますか？", cfgAutoTimer: "タイマーを自動スタート (新キャラで黄昏の岸辺に入場した時点から)",
+  },
+  en: {
+    build: "Build", pasteCode: "Paste code", pasteCodeTip: "Paste a PoB export code",
+    auto: "Auto switch", autoTip: "Switch sets automatically on level-up", diff: "Diff", diffTip: "Highlight changes from the previous set in green/red",
+    onTop: "On top", onTopTip: "Keep this window above the game", settings: "Settings",
+    lgAlloc: "Allocated", lgAdded: "Added vs previous set", lgRemoved: "Removed vs previous set", lgOff: "Unallocated",
+    lgHelp: "Wheel: zoom / Drag: pan / Double-click: fit",
+    importTitle: "PoB export code", importPh: "Code copied from Path of Building > Import/Export Build > Generate",
+    cancel: "Cancel", load: "Load", save: "Save",
+    cfgLog: "Path to Client.txt", cfgLogPh: "Leave empty to auto-detect", cfgChar: "Character name (empty = react to any character's level-up)",
+    cfgBuilds: "PoB Builds folder", cfgPob: "PoB install folder (contains TreeData / Data)",
+    cfgLang: "Language", langAuto: "Auto (system language)",
+    switched: l => `Lv ${l}: switched sets`, loadingTree: "Loading tree data...",
+    points: n => `${n} points`, noSkillSet: "No skill sets", removedGems: "Gems removed since the previous set",
+    epilogue: "Epilogue / endgame", reward: (q, npc) => `Reward: ${q} (${npc})`, buy: (npc, q) => `Buy: ${npc} (after "${q}")`,
+    acqTitle: "Where to get gems", now: "now", nowMark: " ← current", available: " (available)",
+    noneInAct: a => `No gems to pick up in ${a}`, notObtainable: "Not from quests/vendors (drops, trades, etc.)",
+    startGem: "Starting gem", chestGem: "First chest",
+    noServer: "Cannot reach the local server", buildReloaded: "Build file change applied",
+    ERR_LOG_NOT_SET: "Client.txt not found. Set its path in Settings",
+    ERR_LOG_NOT_FOUND: p => `Log file not found: ${p}`,
+    ERR_URL_NOT_SUPPORTED: "URLs are not supported. Paste the code from PoB's Import/Export > Generate",
+    timerTip: "Show/hide per-act times", splitsTitle: "Act splits", total: "Total", stopped: "Paused (game closed)", finished: "Finished", splitAt: t => `from ${t}`, tStart: "Start", tReset: "Reset", tSplits: "Act splits", notRunning: "Not running. Press Start when you are ready", confirmReset: "Reset the timer?", confirmRestart: "Discard the current run and start again now?", cfgAutoTimer: "Start the timer automatically (when a new character enters The Twilight Strand)",
+  },
+};
+let LANG = (navigator.language || "en").toLowerCase().startsWith("ja") ? "ja" : "en";
+function t(key, ...args) { const v = (I18N[LANG] || I18N.en)[key] ?? I18N.en[key] ?? key; return typeof v === "function" ? v(...args) : v; }
+// server error codes look like "ERR_X" or "ERR_X|detail"
+function tErr(msg) { if (!msg) return ""; const [code, detail] = String(msg).split("|"); return code.startsWith("ERR_") ? t(code, detail) : msg; }
+function applyLang(lang) {
+  LANG = lang || ((navigator.language || "en").toLowerCase().startsWith("ja") ? "ja" : "en");
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
+  document.querySelectorAll("[data-i18n-title]").forEach(e => e.title = t(e.dataset.i18nTitle));
+  document.querySelectorAll("[data-i18n-ph]").forEach(e => e.placeholder = t(e.dataset.i18nPh));
+  if (typeof S !== "undefined") {
+    $("auto").textContent = `${t("auto")}: ${S.auto ? "ON" : "OFF"}`;
+    if (S.onTop != null) showOnTop(S.onTop);
+    $("actName").textContent = S.act ? " " + ACT_NAME(S.act) : "";
+    renderSkills(); draw(); layout();
+  }
+}
+
+const api = async (url, opts) => { const r = await fetch(url, opts); const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status); return j; };
+
+const S = {
+  buildPath: null, build: null, mtime: 0, tree: null, treeVersion: null,
+  treeIdx: 0, skillIdx: 0, auto: true, level: null, lastLevelSeen: null,
+  view: { x: 0, y: 0, scale: 0.05 }, hover: null,
+};
+
+// ---------------------------------------------------------------- level -> set
+function parseRange(title) {
+  const t = title
+    .replace(/\{\d+\}/g, " ")                 // PoB-style ordering tags like "{3}"
+    .replace(/[〜～~–—]/g, "-")
+    .replace(/(\d)\s*to\s*(\d)/gi, "$1-$2");   // "12 to 33"
+  let m = t.match(/(\d+)\s*-\s*(\d+)/);
+  if (m) return [ +m[1], +m[2] ];
+  m = t.match(/(\d+)\s*\+/)                      // "68+"
+    || t.match(/(?:lvl|level|lv)\.?\s*(\d+)/i)   // "Lvl 90", "Level 90 Quest Bosses"
+    || t.match(/^\s*(\d+)\s*(?:\(|-|to\b|$)/i);  // "34(Golems) - Cruel Lab", "12 to Lab", "40"
+  if (m) return [ +m[1], Infinity ];
+  return null;
+}
+// lower bound of each set; a set without a number (e.g. "Maps") right after a closed range
+// ("34 - 52") is treated as starting at the next level (53)
+function setBounds(sets) {
+  let prev = null;
+  return sets.map(s => {
+    let r = parseRange(s.title);
+    if (!r && prev && isFinite(prev[1])) r = [prev[1] + 1, Infinity];
+    prev = r;
+    return r;
+  });
+}
+// pick the set whose lower bound is the highest one <= level
+function pickSet(sets, level) {
+  let best = null, bestLo = -1;
+  setBounds(sets).forEach((r, i) => {
+    if (r && r[0] <= level && r[0] > bestLo) { best = i; bestLo = r[0]; }
+  });
+  return best;
+}
+function applyLevel(level, announce) {
+  if (!S.build || level == null) return;
+  const t = pickSet(S.build.trees, level), k = pickSet(S.build.skillSets, level);
+  const changed = (t != null && t !== S.treeIdx) || (k != null && k !== S.skillIdx);
+  if (t != null && t !== S.treeIdx) setTree(t, true);
+  if (k != null) S.skillIdx = k;
+  if (changed) { renderSelectors(); renderSkills(); if (announce) toast(t("switched", level)); }
+}
+
+// ---------------------------------------------------------------- loading
+async function loadBuilds() {
+  const [list, cfg] = await Promise.all([api("/api/builds"), api("/api/config")]);
+  const sel = $("buildSel");
+  sel.innerHTML = list.map(b => `<option value="${esc(b.path)}">${esc(b.path.replace(/\.xml$/, ""))}</option>`).join("");
+  const initial = list.find(b => b.path === cfg.lastBuild) ? cfg.lastBuild : (list[0] && list[0].path);
+  if (initial) { sel.value = initial; await loadBuild(initial); }
+}
+async function loadBuild(path, keepSelection) {
+  const b = await api("/api/build?path=" + encodeURIComponent(path));
+  S.buildPath = path; S.mtime = b.mtime;
+  await setBuild(b, keepSelection);
+}
+async function setBuild(b, keepSelection) {
+  const prevT = S.treeIdx, prevK = S.skillIdx;
+  S.build = b;
+  if (keepSelection && prevT < b.trees.length && prevK < b.skillSets.length) { S.treeIdx = prevT; S.skillIdx = prevK; }
+  else {
+    S.treeIdx = Math.max(0, Math.min(b.activeSpec, b.trees.length - 1));
+    S.skillIdx = Math.max(0, b.skillSets.findIndex(s => s.id === b.activeSkillSet));
+    if (S.auto && S.level != null) applyLevel(S.level, false);
+  }
+  await setTree(S.treeIdx, !keepSelection);
+  renderSelectors(); renderSkills();
+}
+async function setTree(idx, refit) {
+  S.treeIdx = idx;
+  const spec = S.build.trees[idx];
+  const ver = spec ? spec.treeVersion : "";
+  if (!S.tree || S.treeVersion !== ver) {
+    $("treeInfo").textContent = t("loadingTree");
+    S.tree = await api("/api/tree?version=" + encodeURIComponent(ver));
+    S.treeVersion = ver;
+    prepTree();
+  }
+  if (refit) fitView();
+  draw();
+}
+
+// ---------------------------------------------------------------- tree
+function prepTree() {
+  const N = S.tree.nodes;
+  const edges = [], seen = new Set();
+  for (const [id, n] of Object.entries(N)) {
+    n.id = id;
+    for (const o of (n.out || []).concat(n.in || [])) {
+      const m = N[o]; if (!m) continue;
+      const key = id < o ? id + "-" + o : o + "-" + id;
+      if (seen.has(key)) continue; seen.add(key);
+      if (n.isMastery || m.isMastery) continue;
+      if ((n.ascendancyName || "") !== (m.ascendancyName || "")) continue;
+      if (n.classStartIndex != null && m.classStartIndex != null) continue;
+      edges.push([n, m]);
+    }
+  }
+  S.edges = edges;
+}
+function nodeRadius(n) {
+  if (n.isKeystone) return 46; if (n.isNotable) return 32; if (n.isMastery) return 30;
+  if (n.isJewelSocket) return 30; if (n.classStartIndex != null || n.isAscendancyStart) return 22; return 20;
+}
+function curSets() {
+  const cur = S.build.trees[S.treeIdx];
+  const prev = $("diffChk").checked && S.treeIdx > 0 ? S.build.trees[S.treeIdx - 1] : null;
+  return { cur, alloc: new Set(cur ? cur.nodes : []), prev: prev ? new Set(prev.nodes) : null };
+}
+function visible(n, alloc) {
+  if (n.ascendancyName) return false; // placed below the tree by ascLayout()
+  if (n.isMastery) return alloc.has(n.id);
+  return true;
+}
+// ascendancy / bloodline of the current spec
+function specAscendancies(spec) {
+  const out = [];
+  if (!spec || !S.tree) return out;
+  const cls = S.tree.classes[+spec.classId];
+  const ai = +spec.ascendClassId;
+  if (cls && ai > 0 && cls.ascendancies[ai - 1]) out.push({ id: cls.ascendancies[ai - 1], title: cls.ascendancies[ai - 1] });
+  const si = +spec.secondaryAscendClassId;
+  const alt = (S.tree.alternates || [])[si - 1];
+  if (si > 0 && alt) out.push({ id: alt.id, title: alt.name, bloodline: true });
+  return out;
+}
+// moved copies of the ascendancy / bloodline nodes, lined up in a row under the main tree
+let _ascCache = { key: null };
+function ascLayout(spec, alloc) {
+  const key = S.treeVersion + "|" + (spec ? spec.classId + "/" + spec.ascendClassId + "/" + spec.secondaryAscendClassId : "");
+  if (_ascCache.key === key) return _ascCache;
+  const all = Object.values(S.tree.nodes);
+  let mainMaxY = -Infinity;
+  for (const n of all) if (!n.ascendancyName && n.classStartIndex == null) mainMaxY = Math.max(mainMaxY, n.y);
+  const blocks = [];
+  for (const asc of specAscendancies(spec)) {
+    // skip orphan nodes with no connections (legacy data)
+    const src = all.filter(n => n.ascendancyName === asc.id && ((n.out || []).length + (n.in || []).length > 0 || alloc.has(n.id)));
+    if (!src.length) continue;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const n of src) { x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y); x1 = Math.max(x1, n.x); y1 = Math.max(y1, n.y); }
+    blocks.push({ asc, src, x0, y0, x1, y1 });
+  }
+  // K: enlarge the small ascendancy layouts for readability; blocks are spread evenly under the tree
+  const K = 2.4, TOP = mainMaxY + 1400, SPAN = 9000;
+  const nodes = [], labels = [];
+  blocks.forEach((b, i) => {
+    const centre = blocks.length === 1 ? 0 : -SPAN / 2 + SPAN * i / (blocks.length - 1);
+    const bw = (b.x1 - b.x0) * K;
+    const X = x => centre - bw / 2 + (x - b.x0) * K, Y = y => TOP + (y - b.y0) * K;
+    for (const n of b.src) nodes.push({ ...n, x: X(n.x), y: Y(n.y), gx: X(n.gx), gy: Y(n.gy) });
+    labels.push({ text: (b.asc.bloodline ? "Bloodline: " : "Ascendancy: ") + b.asc.title, ids: b.src.map(n => n.id),
+                  x: centre, y: TOP - 350, color: b.asc.bloodline ? "#b892f0" : "#d6a648" });
+  });
+  _ascCache = { key, nodes, labels };
+  return _ascCache;
+}
+function fitView() {
+  const cv = $("cv"); const { cur, alloc } = curSets();
+  let pts = [...alloc].map(id => S.tree.nodes[id]).filter(n => n && !n.ascendancyName);
+  if (pts.length < 2) pts = Object.values(S.tree.nodes).filter(n => !n.ascendancyName);
+  pts = pts.concat(ascLayout(cur, alloc).nodes);
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const n of pts) { x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y); x1 = Math.max(x1, n.x); y1 = Math.max(y1, n.y); }
+  const pad = 600; x0 -= pad; y0 -= pad; x1 += pad; y1 += pad + 500; // extra room for the legend
+  const w = cv.clientWidth, h = cv.clientHeight;
+  S.view.scale = Math.min(w / (x1 - x0), h / (y1 - y0), 0.35);
+  S.view.x = (x0 + x1) / 2; S.view.y = (y0 + y1) / 2;
+}
+function toScreen(x, y) { const cv = $("cv"); return [ (x - S.view.x) * S.view.scale + cv.clientWidth / 2, (y - S.view.y) * S.view.scale + cv.clientHeight / 2 ]; }
+function toWorld(sx, sy) { const cv = $("cv"); return [ (sx - cv.clientWidth / 2) / S.view.scale + S.view.x, (sy - cv.clientHeight / 2) / S.view.scale + S.view.y ]; }
+
+const COL = { alloc: "#d6a648", added: "#4fd17a", removed: "#c0392b", off: "#3d4049" };
+
+// draws edges + nodes through transform tf (world -> screen) at scale sc, skipping things outside clip [x0,y0,x1,y1]
+function drawLayer(ctx, nodes, tf, sc, clip, state) {
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  ctx.lineCap = "round";
+  for (const pass of ["off", "removed", "alloc", "added"]) {
+    ctx.beginPath();
+    for (const [ea, eb] of S.edges) {
+      const a = byId.get(ea.id), b = byId.get(eb.id);
+      if (!a || !b) continue;
+      const sa = state(a), sb = state(b);
+      let st = "off";
+      if ((sa === "alloc" || sa === "added") && (sb === "alloc" || sb === "added")) st = (sa === "added" || sb === "added") ? "added" : "alloc";
+      else if ((sa === "removed" || sa === "alloc") && (sb === "removed" || sb === "alloc") && (sa === "removed" || sb === "removed")) st = "removed";
+      if (st !== pass) continue;
+      const [x1, y1] = tf(a.x, a.y), [x2, y2] = tf(b.x, b.y);
+      if (Math.max(x1, x2) < clip[0] || Math.min(x1, x2) > clip[2] || Math.max(y1, y2) < clip[1] || Math.min(y1, y2) > clip[3]) continue;
+      if (a.group === b.group && a.orbit === b.orbit && a.orbit > 0 && a.gx != null) {
+        const rad = Math.hypot(a.x - a.gx, a.y - a.gy);
+        const a1 = Math.atan2(a.y - a.gy, a.x - a.gx), a2 = Math.atan2(b.y - a.gy, b.x - a.gx);
+        let d = a2 - a1; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+        const [scx, scy] = tf(a.gx, a.gy);
+        ctx.moveTo(x1, y1); ctx.arc(scx, scy, rad * sc, a1, a1 + d, d < 0);
+        continue;
+      }
+      ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+    }
+    ctx.strokeStyle = COL[pass];
+    ctx.lineWidth = Math.max(1, (pass === "off" ? 8 : 16) * sc);
+    ctx.globalAlpha = pass === "off" ? 0.7 : 1;
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  for (const n of nodes) {
+    const st = state(n);
+    const [x, y] = tf(n.x, n.y);
+    const r = Math.max(nodeRadius(n) * sc, st === "off" ? 1.2 : 2.2);
+    if (x < clip[0] - r || x > clip[2] + r || y < clip[1] - r || y > clip[3] + r) continue;
+    ctx.beginPath();
+    if (n.isKeystone) { ctx.rect(x - r, y - r, 2 * r, 2 * r); }
+    else if (n.isJewelSocket) { ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); }
+    else ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = st === "off" ? (n.isNotable || n.isKeystone ? "#5a5e68" : "#3d4049") : COL[st];
+    if ((n.classStartIndex != null || n.isAscendancyStart) && st === "off") ctx.fillStyle = "#26282e";
+    ctx.fill();
+    if (n.isNotable || n.isKeystone) { ctx.lineWidth = Math.max(1, 5 * sc); ctx.strokeStyle = st === "off" ? "#777" : "#fff3"; ctx.stroke(); }
+    if (S.hover && S.hover.id === n.id) { ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+    if (sc > 0.12 && (n.isNotable || n.isKeystone) && st !== "off") {
+      ctx.fillStyle = "#e8e4dc"; ctx.font = `${Math.min(14, Math.max(10, 70 * sc))}px Segoe UI`; ctx.textAlign = "center";
+      ctx.fillText(n.name, x, y + r + 12);
+    }
+  }
+}
+
+function draw() {
+  const cv = $("cv"), ctx = cv.getContext("2d"), dpr = devicePixelRatio || 1;
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== w * dpr || cv.height !== h * dpr) { cv.width = w * dpr; cv.height = h * dpr; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = "#0e0f12"; ctx.fillRect(0, 0, w, h);
+  S.layers = [];
+  if (!S.tree || !S.build) return;
+  const { cur, alloc, prev } = curSets();
+  const state = n => alloc.has(n.id) ? (prev && !prev.has(n.id) ? "added" : "alloc") : (prev && prev.has(n.id) ? "removed" : "off");
+  const all = Object.values(S.tree.nodes);
+  const asc = ascLayout(cur, alloc);
+
+  const nodes = all.filter(n => visible(n, alloc)).concat(asc.nodes);
+  drawLayer(ctx, nodes, toScreen, S.view.scale, [0, 0, w, h], state);
+  S.layers.push({ nodes, rect: null, toWorld, sc: S.view.scale });
+
+  // ascendancy / bloodline titles with allocated point count
+  ctx.textAlign = "center";
+  for (const l of asc.labels) {
+    const [x, y] = toScreen(l.x, l.y);
+    const pts = l.ids.filter(id => alloc.has(id) && !S.tree.nodes[id].isAscendancyStart).length;
+    ctx.fillStyle = l.color; ctx.font = `600 ${Math.min(18, Math.max(10, 80 * S.view.scale))}px Segoe UI`;
+    ctx.fillText(`${l.text} (${pts})`, x, y);
+  }
+
+  let nAlloc = 0, nAdded = 0, nRemoved = 0;
+  for (const n of all) {
+    if (n.classStartIndex != null || n.ascendancyName) continue;
+    const st = state(n); if (st === "alloc" || st === "added") nAlloc++; if (st === "added") nAdded++; if (st === "removed") nRemoved++;
+  }
+  const info = `${esc(cur ? cur.title : "")} — ${t("points", nAlloc)}` + (prev ? ` <span class="new">(+${nAdded})</span>` + (nRemoved ? ` <span style="color:#e06666">(-${nRemoved})</span>` : "") : "");
+  $("treeInfo").innerHTML = info;
+}
+
+// ---------------------------------------------------------------- skills
+function renderSkills() {
+  const side = $("side");
+  if (!S.build) { side.innerHTML = ""; return; }
+  const set = S.build.skillSets[S.skillIdx];
+  const prevSet = $("diffChk").checked && S.skillIdx > 0 ? S.build.skillSets[S.skillIdx - 1] : null;
+  const prevNames = new Set(prevSet ? prevSet.groups.flatMap(g => g.gems.map(x => x.name)) : []);
+  const curNames = new Set(set ? set.groups.flatMap(g => g.gems.map(x => x.name)) : []);
+  if (!set) { side.innerHTML = `<h3>${t("noSkillSet")}</h3>`; return; }
+  let html = `<h3>${esc(set.title)}</h3>`;
+  for (const g of set.groups) {
+    if (g.fromItem) continue;
+    html += `<div class="group ${g.enabled ? "" : "disabled"}"><div class="hdr"><span>${esc(g.label)}</span><span>${esc(g.slot)}</span></div>`;
+    for (const gem of g.gems) {
+      const added = prevSet && !prevNames.has(gem.name);
+      html += `<div class="gem ${gem.support ? "support" : ""} ${gem.enabled ? "" : "off"} ${added ? "added" : ""}">
+        <span class="dot" style="background:var(--gem-${gem.color})"></span><span class="name">${esc(gem.name)}</span>
+        <span class="lv">${gem.level}${+gem.quality ? " / " + gem.quality + "%" : ""}</span></div>`;
+    }
+    html += `</div>`;
+  }
+  if (prevSet) {
+    const removed = [...prevNames].filter(n => !curNames.has(n));
+    if (removed.length) html += `<div class="removed">${t("removedGems")}: ${removed.map(n => `<span>${esc(n)}</span>`).join(", ")}</div>`;
+  }
+  html += renderAcquire(set);
+  side.innerHTML = html;
+}
+
+// ---------------------------------------------------------------- gem acquisition by act
+// class of the in-game character from the log; after ascending the log shows the ascendancy name
+function gameBaseClass() {
+  const c = S.charClass;
+  if (!c || !S.tree) return null;
+  for (const k of S.tree.classes) if (k.name === c || k.ascendancies.includes(c)) return k.name;
+  // ascendancies that may be missing from older tree data
+  return { Luminary: "Scion", Reliquarian: "Scion", Warden: "Ranger", Raider: "Ranger" }[c] || null;
+}
+const ACT_NAME = a => a >= 11 ? t("epilogue") : `Act ${a}`;
+function renderAcquire(set) {
+  if (!S.gemSources) return "";
+  const cls = gameBaseClass() || S.build.className;
+  const seen = new Map();
+  for (const g of set.groups) {
+    if (g.fromItem) continue;
+    for (const gem of g.gems) if (!seen.has(gem.name)) seen.set(gem.name, gem);
+  }
+  const byAct = new Map(), unknown = [];
+  for (const gem of seen.values()) {
+    const src = (S.gemSources[gem.gemId] || {}).sources || [];
+    const mine = src.filter(e => e.classes.includes(cls));
+    if (!mine.length) { unknown.push(gem); continue; }
+    const quest = mine.find(e => e.kind === "quest" || e.kind === "start");
+    const vendor = mine.find(e => e.kind === "vendor");
+    const act = Math.min(quest ? quest.act : 99, vendor ? vendor.act : 99);
+    const opts = [];
+    if (quest) opts.push(quest.kind === "start" ? t(quest.quest) : t("reward", quest.quest, quest.npc) + (quest.act > act ? ` [${ACT_NAME(quest.act)}]` : ""));
+    if (vendor) opts.push(t("buy", vendor.npc, vendor.quest) + (vendor.act > act ? ` [${ACT_NAME(vendor.act)}]` : ""));
+    if (!byAct.has(act)) byAct.set(act, []);
+    byAct.get(act).push({ gem, opts });
+  }
+  const cur = S.act;
+  let html = `<h3 style="margin-top:16px">${t("acqTitle")} <span style="color:var(--muted);font-size:12px;font-weight:normal">(${esc(cls)}${cur ? ` / ${t("now")} ` + ACT_NAME(cur) : ""})</span></h3>`;
+  const acts = [...byAct.keys()].sort((a, b) => a - b).filter(a => cur == null || a === cur);
+  if (cur != null && !acts.length) html += `<div class="acq-src">${t("noneInAct", ACT_NAME(cur))}</div>`;
+  for (const act of acts) {
+    const state = cur == null ? "" : act < cur ? "past" : act === cur ? "now" : "";
+    html += `<div class="acq ${state}"><div class="acq-act">${ACT_NAME(act)}${state === "now" ? t("nowMark") : state === "past" ? t("available") : ""}</div>`;
+    for (const { gem, opts } of byAct.get(act)) {
+      html += `<div class="acq-row"><span class="dot" style="background:var(--gem-${gem.color})"></span><div><div>${esc(gem.name)}</div>${opts.map(o => `<div class="acq-src">${esc(o)}</div>`).join("")}</div></div>`;
+    }
+    html += `</div>`;
+  }
+  if (cur == null && unknown.length) html += `<div class="acq"><div class="acq-act">${t("notObtainable")}</div>${unknown.map(g => `<div class="acq-row"><span class="dot" style="background:var(--gem-${g.color})"></span><div>${esc(g.name)}</div></div>`).join("")}</div>`;
+  return html;
+}
+function renderSelectors() {
+  if (!S.build) return;
+  $("treeSel").innerHTML = S.build.trees.map((t, i) => `<option value="${i}">${esc(t.title)}</option>`).join("");
+  $("skillSel").innerHTML = S.build.skillSets.map((t, i) => `<option value="${i}">${esc(t.title)}</option>`).join("");
+  $("treeSel").value = S.treeIdx; $("skillSel").value = S.skillIdx;
+}
+
+// ---------------------------------------------------------------- polling
+async function pollState() {
+  try {
+    const st = await api("/api/state");
+    $("status").textContent = tErr(st.logError);
+    if (st.act !== S.act || st.charClass !== S.charClass) {
+      S.act = st.act; S.charClass = st.charClass;
+      $("actName").textContent = st.act ? " " + ACT_NAME(st.act) : "";
+      renderSkills();
+    }
+    if (st.level != null) {
+      $("lvl").textContent = st.level;
+      $("charName").textContent = st.charClass || "";
+      const changed = st.level !== S.level;
+      S.level = st.level;
+      if (changed && S.auto) applyLevel(st.level, S.lastLevelSeen != null);
+      S.lastLevelSeen = st.level;
+    }
+    S.timer = st.timer; S.timerAt = Date.now(); renderTimer();
+  } catch (e) { $("status").textContent = t("noServer"); }
+}
+async function pollBuild() {
+  if (!S.buildPath) return;
+  try {
+    const { mtime } = await api("/api/build_mtime?path=" + encodeURIComponent(S.buildPath));
+    if (mtime !== S.mtime) { await loadBuild(S.buildPath, true); toast(t("buildReloaded")); }
+  } catch (e) {}
+}
+
+// ---------------------------------------------------------------- ui wiring
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+let toastT; function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = "none", 2500); }
+function setAuto(on) { S.auto = on; $("auto").classList.toggle("on", on); $("auto").textContent = `${t("auto")}: ${on ? "ON" : "OFF"}`; if (on) applyLevel(S.level, false); }
+
+$("buildSel").onchange = e => loadBuild(e.target.value).catch(err => alert(err.message));
+$("treeSel").onchange = e => { setAuto(false); setTree(+e.target.value, true); };
+$("skillSel").onchange = e => { setAuto(false); S.skillIdx = +e.target.value; renderSkills(); };
+$("auto").onclick = () => setAuto(!S.auto);
+$("diffChk").onchange = () => { draw(); renderSkills(); };
+$("importBtn").onclick = () => { $("importErr").textContent = ""; $("importDlg").showModal(); };
+$("importCancel").onclick = () => $("importDlg").close();
+$("importOk").onclick = async () => {
+  try {
+    const b = await api("/api/import", { method: "POST", body: JSON.stringify({ code: $("importCode").value }) });
+    S.buildPath = null; $("buildSel").value = ""; await setBuild(b); $("importDlg").close();
+  } catch (e) { $("importErr").textContent = tErr(e.message); }
+};
+// desktop app only (pywebview): always-on-top toggle
+function showOnTop(on) { S.onTop = on; const b = $("onTopBtn"); b.textContent = `${t("onTop")}: ${on ? "ON" : "OFF"}`; b.classList.toggle("on", on); b.style.borderColor = on ? "var(--new)" : ""; b.style.color = on ? "var(--new)" : ""; }
+addEventListener("pywebviewready", async () => {
+  $("onTopBtn").style.display = "";
+  showOnTop(await window.pywebview.api.get_on_top());
+  layout();
+});
+$("onTopBtn").onclick = async () => showOnTop(await window.pywebview.api.toggle_on_top());
+$("settingsBtn").onclick = async () => {
+  const c = await api("/api/config");
+  $("cfgLog").value = c.clientLog; $("cfgChar").value = c.characterName; $("cfgBuilds").value = c.buildsDir; $("cfgPob").value = c.pobDir; $("cfgLang").value = c.lang || ""; $("cfgAutoTimer").checked = !!c.timerAutoStart;
+  $("setDlg").showModal();
+};
+$("cfgCancel").onclick = () => $("setDlg").close();
+$("cfgOk").onclick = async () => {
+  await api("/api/config", { method: "POST", body: JSON.stringify({ clientLog: $("cfgLog").value, characterName: $("cfgChar").value, buildsDir: $("cfgBuilds").value, pobDir: $("cfgPob").value, lang: $("cfgLang").value, timerAutoStart: $("cfgAutoTimer").checked }) });
+  applyLang($("cfgLang").value);
+  $("setDlg").close(); S.level = null; await loadBuilds();
+};
+
+// ---------------------------------------------------------------- run timer
+function fmtTime(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60, s2 = sec % 60;
+  return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s2).padStart(2, "0");
+}
+let splitsOpen = false;
+try { splitsOpen = localStorage.getItem("splitsOpen") === "1"; } catch (e) {}
+function renderTimer() {
+  const tm = S.timer || { active: false }, bar = $("timerBar"), panel = $("splits"), body = $("splitsBody");
+  // extrapolate between polls so the clock ticks smoothly
+  const extra = tm.active && tm.ticking ? (Date.now() - S.timerAt) / 1000 : 0;
+  bar.classList.toggle("ticking", !!tm.ticking);
+  bar.classList.toggle("finished", !!tm.finished);
+  $("tTotal").textContent = tm.active ? fmtTime(tm.total + extra) : "--:--";
+  const cur = tm.active ? tm.splits.find(x => x.current) : null;
+  $("tAct").innerHTML = cur ? `Act ${cur.act} <b>${fmtTime(cur.duration + extra)}</b>` : "";
+  $("tState").textContent = !tm.active ? t("notRunning") : tm.finished ? t("finished") : !tm.ticking ? t("stopped") : "";
+  $("tReset").style.display = tm.active ? "" : "none";
+  $("tSplitsBtn").classList.toggle("on", splitsOpen);
+  panel.style.display = splitsOpen && tm.active ? "block" : "none";
+  if (!splitsOpen || !tm.active) return;
+  let html = `<h4>${t("splitsTitle")}</h4>`;
+  for (const sp of tm.splits) {
+    const d = sp.duration + (sp.current ? extra : 0);
+    html += `<div class="row ${sp.current ? "cur" : ""}"><span>Act ${sp.act} <span class="at">${t("splitAt", fmtTime(sp.start))}</span></span><span>${fmtTime(d)}</span></div>`;
+  }
+  html += `<div class="row sum"><span>${t("total")}</span><span>${fmtTime(tm.total + extra)}</span></div>`;
+  body.innerHTML = html;
+}
+async function timerAction(action) {
+  S.timer = await api("/api/timer", { method: "POST", body: JSON.stringify({ action }) });
+  S.timerAt = Date.now(); renderTimer();
+}
+$("tStart").onclick = () => { if (S.timer && S.timer.active && !S.timer.finished && !confirm(t("confirmRestart"))) return; timerAction("start"); };
+$("tReset").onclick = () => { if (confirm(t("confirmReset"))) timerAction("reset"); };
+$("tSplitsBtn").onclick = () => {
+  splitsOpen = !splitsOpen;
+  try { localStorage.setItem("splitsOpen", splitsOpen ? "1" : "0"); } catch (e) {}
+  renderTimer();
+};
+setInterval(renderTimer, 1000);
+
+// pan / zoom / hover
+const cv = $("cv"); let drag = null;
+cv.addEventListener("mousedown", e => { const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; if ((S.layers || []).some(l => l.rect && x >= l.rect[0] && x <= l.rect[2] && y >= l.rect[1] && y <= l.rect[3])) return; drag = { x: e.clientX, y: e.clientY, vx: S.view.x, vy: S.view.y }; cv.classList.add("drag"); });
+addEventListener("mouseup", () => { drag = null; cv.classList.remove("drag"); });
+addEventListener("mousemove", e => {
+  if (drag) { S.view.x = drag.vx - (e.clientX - drag.x) / S.view.scale; S.view.y = drag.vy - (e.clientY - drag.y) / S.view.scale; draw(); return; }
+  if (e.target !== cv || !S.tree) { $("tip").style.display = "none"; return; }
+  const rect = cv.getBoundingClientRect(); const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+  const layer = (S.layers || []).find(l => !l.rect || (sx >= l.rect[0] && sx <= l.rect[2] && sy >= l.rect[1] && sy <= l.rect[3]));
+  let best = null, bd = Infinity;
+  if (layer) {
+    const [wx, wy] = layer.toWorld(sx, sy);
+    for (const n of layer.nodes) {
+      const d = Math.hypot(n.x - wx, n.y - wy);
+      if (d < bd && d < Math.max(nodeRadius(n) * 1.3, 6 / layer.sc)) { bd = d; best = n; }
+    }
+  }
+  if (best !== S.hover) { S.hover = best; draw(); }
+  const tip = $("tip");
+  if (best && best.name) {
+    let stats = best.stats || [];
+    if (best.isMastery) {
+      const eff = S.build.trees[S.treeIdx].masteries[best.id];
+      const me = (best.masteryEffects || []).find(m => String(m.effect) === String(eff));
+      if (me) stats = me.stats;
+    }
+    tip.innerHTML = `<h4>${esc(best.name)}</h4>` + stats.map(s => `<div>${esc(s)}</div>`).join("");
+    tip.style.display = "block";
+    tip.style.left = Math.min(e.clientX + 16, innerWidth - tip.offsetWidth - 8) + "px";
+    tip.style.top = Math.min(e.clientY + 16, innerHeight - tip.offsetHeight - 8) + "px";
+  } else tip.style.display = "none";
+});
+cv.addEventListener("wheel", e => {
+  e.preventDefault();
+  const rect = cv.getBoundingClientRect(); const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+  const [wx, wy] = toWorld(sx, sy);
+  S.view.scale = Math.min(1.5, Math.max(0.01, S.view.scale * Math.exp(-e.deltaY * 0.0015)));
+  const [nx, ny] = toWorld(sx, sy); S.view.x += wx - nx; S.view.y += wy - ny; draw();
+}, { passive: false });
+cv.addEventListener("dblclick", () => { fitView(); draw(); });
+$("resizer").addEventListener("mousedown", e => {
+  e.preventDefault();
+  const move = ev => { document.documentElement.style.setProperty("--side", Math.max(220, innerWidth - ev.clientX) + "px"); draw(); };
+  const up = () => { removeEventListener("mousemove", move); removeEventListener("mouseup", up); };
+  addEventListener("mousemove", move); addEventListener("mouseup", up);
+});
+function layout() { document.documentElement.style.setProperty("--hdr", ($("timerBar").offsetHeight + $("hdr").offsetHeight) + "px"); draw(); }
+addEventListener("resize", layout);
+
+(async () => {
+  try { applyLang((await api("/api/config")).lang); } catch (e) { applyLang(""); }
+  layout();
+  await pollState();
+  try { await loadBuilds(); } catch (e) { $("status").textContent = e.message; }
+  setInterval(pollState, 1000);
+  setInterval(pollBuild, 2000);
+  try { S.gemSources = (await api("/api/gem_sources")).gems; renderSkills(); } catch (e) { console.warn("gem data", e); }
+})();
+</script>
+</body>
+</html>
