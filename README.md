@@ -20,7 +20,7 @@ Path of Exile のレベリング中に、Path of Building (PoB) のビルドの 
 - パッシブツリーとスキルジェムを並べて表示 (アセンダンシー / ブラッドラインはツリーの下に表示)
 - レベルアップでセットを自動切替 (セット名の `1-11`、`Level 12-31`、`12 to 33`、`Lvl 90`、`68+` などを解釈)
 - 前のセットとの差分表示 (追加=緑 / 削除=赤)
-- 現在の Act で入手できるジェム (クエスト報酬 / 購入) を、ゲーム内キャラクターのクラスに合わせて表示
+- 現在の Act で入手できるジェム (クエスト報酬 / 購入) を、ゲーム内キャラクターのクラスに合わせて表示 (◀ ▶ で前後の Act、「すべて」で全 Act も表示可能。ゲーム内で Act が変わると現在の Act の表示に戻ります)
 - PoB でビルドを保存すると自動で反映、PoB エクスポートコードの貼り付けにも対応
 - Act ごとのタイムを計るレベリングタイマー (ゲームを閉じていた時間は除外)
 - ゲームの手前に表示し続ける「最前面」表示
@@ -143,7 +143,7 @@ It reads the game log (`Client.txt`) and **switches the tree / skill set automat
 - Passive tree and skill gems side by side (ascendancy / bloodline drawn below the tree)
 - Automatic set switching on level-up (understands set names like `1-11`, `Level 12-31`, `12 to 33`, `Lvl 90`, `68+`)
 - Diff against the previous set (added = green / removed = red)
-- Gems you can get in your current act (quest rewards / vendors), based on your in-game character's class
+- Gems you can get in your current act (quest rewards / vendors), based on your in-game character's class (◀ ▶ browse other acts and "All" shows every act; the list goes back to your current act when you enter a new act in game)
 - Picks up changes when you save the build in PoB; PoB export codes can also be pasted
 - Leveling timer with per-act splits (time while the game is closed is excluded)
 - "Always on top" to keep the window above the game

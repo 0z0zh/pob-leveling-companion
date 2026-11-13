@@ -9,10 +9,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### 日本語
+#### 追加
+- ジェム入手タイミングで、◀ ▶ による前後の Act の表示と「すべて」による全 Act の表示に対応 (ゲーム内で Act が変わると現在の Act の表示に戻る)
+
 #### 変更
 - リリースページの本文に、コード署名ポリシーへのリンク・プライバシーの記載・ダウンロードの説明を追加
 
 ### English
+#### Added
+- Gem acquisition timing can now browse other acts with ◀ ▶ or show every act with "All"; it returns to the current act when you enter a new act in game.
+
 #### Changed
 - Release pages now include a link to the code signing policy, the privacy statement and download notes.
 

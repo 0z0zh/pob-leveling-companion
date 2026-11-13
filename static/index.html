@@ -68,6 +68,11 @@ canvas.drag { cursor: grabbing; }
 .acq { border-left: 3px solid var(--line); padding: 2px 0 4px 8px; margin-bottom: 8px; }
 .acq.now { border-left-color: var(--accent); background: rgba(214,166,72,.06); }
 .acq.past { opacity: .5; }
+.acq-nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 2px 0 8px; }
+.acq-nav button { padding: 1px 8px; font-size: 12px; }
+.acq-nav button.on { border-color: var(--accent); color: var(--accent); }
+.acq-nav .lbl { min-width: 7.5em; text-align: center; font-weight: 600; }
+.acq-nav .lbl.away { color: var(--accent); }
 .acq-act { font-weight: 600; color: var(--accent); margin-bottom: 2px; }
 .acq:not(.now) .acq-act { color: var(--muted); }
 .acq-row { display: flex; gap: 6px; align-items: baseline; padding: 1px 0; }
@@ -147,7 +152,7 @@ const I18N = {
     points: n => `${n} ポイント`, noSkillSet: "スキルセットがありません", removedGems: "前セットから外れたジェム",
     epilogue: "エピローグ以降", reward: (q, npc) => `報酬: ${q} (${npc})`, buy: (npc, q) => `購入: ${npc} (「${q}」後)`,
     acqTitle: "ジェム入手タイミング", now: "現在", nowMark: " ← 現在", available: " (入手可能)",
-    noneInAct: a => `${a} で入手するジェムはありません`, notObtainable: "クエスト/購入では入手不可 (ドロップ・交換など)",
+    noneInAct: a => `${a} で入手するジェムはありません`, acqPrev: "前の Act", acqNext: "次の Act", acqBack: "現在の Act", acqAll: "すべて", acqBackTip: "今いる Act の表示に戻る", acqAllTip: "すべての Act をまとめて表示", notObtainable: "クエスト/購入では入手不可 (ドロップ・交換など)",
     startGem: "初期装備", chestGem: "最初の宝箱",
     noServer: "サーバーに接続できません", buildReloaded: "ビルドファイルの更新を反映しました",
     ERR_LOG_NOT_SET: "Client.txt が見つかりません。設定でパスを指定してください",
@@ -170,7 +175,7 @@ const I18N = {
     points: n => `${n} points`, noSkillSet: "No skill sets", removedGems: "Gems removed since the previous set",
     epilogue: "Epilogue / endgame", reward: (q, npc) => `Reward: ${q} (${npc})`, buy: (npc, q) => `Buy: ${npc} (after "${q}")`,
     acqTitle: "Where to get gems", now: "now", nowMark: " ← current", available: " (available)",
-    noneInAct: a => `No gems to pick up in ${a}`, notObtainable: "Not from quests/vendors (drops, trades, etc.)",
+    noneInAct: a => `No gems to pick up in ${a}`, acqPrev: "Previous act", acqNext: "Next act", acqBack: "Current act", acqAll: "All", acqBackTip: "Go back to the act you are in", acqAllTip: "Show every act at once", notObtainable: "Not from quests/vendors (drops, trades, etc.)",
     startGem: "Starting gem", chestGem: "First chest",
     noServer: "Cannot reach the local server", buildReloaded: "Build file change applied",
     ERR_LOG_NOT_SET: "Client.txt not found. Set its path in Settings",
@@ -496,6 +501,18 @@ function renderSkills() {
 }
 
 // ---------------------------------------------------------------- gem acquisition by act
+$("side").addEventListener("click", e => {
+  const b = e.target.closest("[data-acq]");
+  if (!b || b.disabled) return;
+  const a = b.dataset.acq, cur = Math.min(S.act || 1, 10);
+  const view = typeof S.acqView === "number" ? S.acqView : cur;
+  if (a === "prev") S.acqView = Math.max(1, view - 1);
+  else if (a === "next") S.acqView = Math.min(10, view + 1);
+  else if (a === "current") S.acqView = null;
+  else if (a === "all") S.acqView = S.acqView === "all" ? null : "all";
+  if (S.acqView === (S.act || null)) S.acqView = null;  // browsing back onto the current act = follow it again
+  renderSkills();
+});
 // class of the in-game character from the log; after ascending the log shows the ascendancy name
 function gameBaseClass() {
   const c = S.charClass;
@@ -528,9 +545,20 @@ function renderAcquire(set) {
     byAct.get(act).push({ gem, opts });
   }
   const cur = S.act;
+  // S.acqView: null = follow the current act, 1-10 = an act picked with the arrows, "all" = every act
+  const showAll = S.acqView === "all" || (S.acqView == null && cur == null);
+  const view = typeof S.acqView === "number" ? S.acqView : Math.min(cur || 1, 10);
   let html = `<h3 style="margin-top:16px">${t("acqTitle")} <span style="color:var(--muted);font-size:12px;font-weight:normal">(${esc(cls)}${cur ? ` / ${t("now")} ` + ACT_NAME(cur) : ""})</span></h3>`;
-  const acts = [...byAct.keys()].sort((a, b) => a - b).filter(a => cur == null || a === cur);
-  if (cur != null && !acts.length) html += `<div class="acq-src">${t("noneInAct", ACT_NAME(cur))}</div>`;
+  const away = !showAll && cur != null && view !== cur;
+  html += `<div class="acq-nav">
+    <button data-acq="prev" title="${t("acqPrev")}" ${showAll || view <= 1 ? "disabled" : ""}>◀</button>
+    <span class="lbl ${away ? "away" : ""}">${showAll ? t("acqAll") : ACT_NAME(view)}</span>
+    <button data-acq="next" title="${t("acqNext")}" ${showAll || view >= 10 ? "disabled" : ""}>▶</button>
+    ${cur != null && (away || S.acqView === "all") ? `<button data-acq="current" title="${t("acqBackTip")}">${t("acqBack")}</button>` : ""}
+    <button data-acq="all" class="${showAll ? "on" : ""}" title="${t("acqAllTip")}">${t("acqAll")}</button>
+  </div>`;
+  const acts = [...byAct.keys()].sort((a, b) => a - b).filter(a => showAll || a === view);
+  if (!showAll && !acts.length) html += `<div class="acq-src">${t("noneInAct", ACT_NAME(view))}</div>`;
   for (const act of acts) {
     const state = cur == null ? "" : act < cur ? "past" : act === cur ? "now" : "";
     html += `<div class="acq ${state}"><div class="acq-act">${ACT_NAME(act)}${state === "now" ? t("nowMark") : state === "past" ? t("available") : ""}</div>`;
@@ -539,7 +567,7 @@ function renderAcquire(set) {
     }
     html += `</div>`;
   }
-  if (cur == null && unknown.length) html += `<div class="acq"><div class="acq-act">${t("notObtainable")}</div>${unknown.map(g => `<div class="acq-row"><span class="dot" style="background:var(--gem-${g.color})"></span><div>${esc(g.name)}</div></div>`).join("")}</div>`;
+  if (showAll && unknown.length) html += `<div class="acq"><div class="acq-act">${t("notObtainable")}</div>${unknown.map(g => `<div class="acq-row"><span class="dot" style="background:var(--gem-${g.color})"></span><div>${esc(g.name)}</div></div>`).join("")}</div>`;
   return html;
 }
 function renderSelectors() {
@@ -555,6 +583,7 @@ async function pollState() {
     const st = await api("/api/state");
     $("status").textContent = tErr(st.logError);
     if (st.act !== S.act || st.charClass !== S.charClass) {
+      if (st.act !== S.act) S.acqView = null;  // a new act in game: show it again
       S.act = st.act; S.charClass = st.charClass;
       $("actName").textContent = st.act ? " " + ACT_NAME(st.act) : "";
       renderSkills();
