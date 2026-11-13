@@ -8,6 +8,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 日本語
+#### 追加
+- GitHub Actions による exe の自動ビルド。タグを push するとリリースに exe と SHA-256 チェックサムを添付
+- exe に製品名とバージョン情報を埋め込み (`VERSION` ファイルから生成)
+- README にコード署名ポリシー (SignPath Foundation に申請予定) を追加
+
+#### 変更
+- ビルドに使うライブラリのバージョンを `requirements-build.txt` で固定
+
+### English
+#### Added
+- Automatic exe builds with GitHub Actions; pushing a tag attaches the exe and its SHA-256 checksum to the release.
+- Product name and version metadata embedded in the exe (generated from the `VERSION` file).
+- Code signing policy in the README (SignPath Foundation, to be requested).
+
+#### Changed
+- Build dependency versions pinned in `requirements-build.txt`.
+
 ## [0.1.0] - 2026-11-13
 
 ### 日本語
