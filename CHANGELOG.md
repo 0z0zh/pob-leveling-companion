@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-13
+
 ### 日本語
 #### 追加
 - ジェム入手タイミングで、◀ ▶ による前後の Act の表示と「すべて」による全 Act の表示に対応 (ゲーム内で Act が変わると現在の Act の表示に戻る)
@@ -76,6 +78,7 @@ First public version.
 - Japanese / English UI.
 - Automatic detection of `Client.txt` (Steam, standalone and Epic installs).
 
-[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/0z0zh/pob-leveling-companion/releases/tag/v0.1.0
