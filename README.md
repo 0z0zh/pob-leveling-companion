@@ -258,7 +258,7 @@ Delete the exe and the `config.json` and `cache\` created next to it. Nothing is
 
 Free code signing provided by [SignPath.io](https://about.signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
 
-> Status: code signing through the SignPath Foundation has been requested. Until it is enabled, release executables are unsigned.
+> Status: code signing through the SignPath Foundation is planned and has not been applied for yet. Until it is enabled, release executables are unsigned.
 
 - Release executables are built from this repository by [GitHub Actions](.github/workflows/build.yml) on GitHub-hosted runners; nothing built on a personal machine is signed.
 - Every signing request is approved manually by an approver.
@@ -267,7 +267,7 @@ Free code signing provided by [SignPath.io](https://about.signpath.io/), certifi
   - Approvers: [0z0zh](https://github.com/0z0zh)
 - Privacy policy: This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
 
-コード署名ポリシー (日本語): 上記のとおり、署名は SignPath.io が無償で提供し、証明書は SignPath Foundation が発行します (現在申請中で、有効になるまでリリースの exe は署名なしです)。署名する exe は本リポジトリから GitHub Actions でビルドしたものだけで、署名のたびに承認者が手動で承認します。本プログラムは、利用者が明示的に求めない限り、ネットワーク上の他のシステムに情報を送信しません。
+コード署名ポリシー (日本語): 上記のとおり、署名は SignPath.io が無償で提供し、証明書は SignPath Foundation が発行します (申請はこれからで、有効になるまでリリースの exe は署名なしです)。署名する exe は本リポジトリから GitHub Actions でビルドしたものだけで、署名のたびに承認者が手動で承認します。本プログラムは、利用者が明示的に求めない限り、ネットワーク上の他のシステムに情報を送信しません。
 
 ## License
 

@@ -8,11 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-13
+
 ### 日本語
 #### 追加
 - GitHub Actions による exe の自動ビルド。タグを push するとリリースに exe と SHA-256 チェックサムを添付
 - exe に製品名とバージョン情報を埋め込み (`VERSION` ファイルから生成)
-- README にコード署名ポリシー (SignPath Foundation に申請予定) を追加
+- README にコード署名ポリシーを追加 (SignPath Foundation への申請準備)
 
 #### 変更
 - ビルドに使うライブラリのバージョンを `requirements-build.txt` で固定
@@ -21,7 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 #### Added
 - Automatic exe builds with GitHub Actions; pushing a tag attaches the exe and its SHA-256 checksum to the release.
 - Product name and version metadata embedded in the exe (generated from the `VERSION` file).
-- Code signing policy in the README (SignPath Foundation, to be requested).
+- Code signing policy in the README (in preparation for applying to the SignPath Foundation).
 
 #### Changed
 - Build dependency versions pinned in `requirements-build.txt`.
@@ -60,5 +62,6 @@ First public version.
 - Japanese / English UI.
 - Automatic detection of `Client.txt` (Steam, standalone and Epic installs).
 
-[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/0z0zh/pob-leveling-companion/releases/tag/v0.1.0
