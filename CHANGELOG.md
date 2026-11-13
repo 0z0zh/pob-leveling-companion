@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 日本語
+#### 修正
+- 「更新」を押してもアプリが閉じず、入れ替え後に `PoBLevelingCompanion.exe.old` が残ることがある問題を修正 (更新開始後はアプリを確実に終了。終了しない場合は入れ替えを中止)
+- 起動時に、以前の更新で残った `.old` / `.new` ファイルを削除
+
+### English
+#### Fixed
+- After pressing "Update" the app could stay open, leaving `PoBLevelingCompanion.exe.old` behind; the app now always exits once the update starts, and the swap is cancelled if it does not.
+- Leftover `.old` / `.new` files from an earlier update are removed at start-up.
+
 ## [0.1.5] - 2026-11-13
 
 ### 日本語

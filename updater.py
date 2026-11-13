@@ -73,6 +73,18 @@ def check(force=False):
         return info
 
 
+def cleanup_leftovers():
+    """Delete <exe>.old / <exe>.new left next to the exe by an earlier update (ignored if in use)."""
+    if not FROZEN:
+        return
+    exe = Path(sys.executable).resolve()
+    for suffix in (".old", ".new"):
+        try:
+            exe.with_name(exe.name + suffix).unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
 def public(info):
     return {k: v for k, v in info.items() if not k.startswith("_")}
 
@@ -116,14 +128,20 @@ for /l %%i in (1,1,60) do (
   tasklist /fi "PID eq {wait_pid}" 2>nul | find "{wait_pid}" >nul || goto swap
   ping -n 2 127.0.0.1 >nul
 )
+rem the app did not exit within a minute: do not swap under a running app
+del "{new}" >nul 2>&1
+goto done
 :swap
 ping -n 2 127.0.0.1 >nul
-move /y "{exe}" "{old}" >nul 2>&1 || goto fail
-move /y "{new}" "{exe}" >nul 2>&1 || (move /y "{old}" "{exe}" >nul & goto fail)
+move /y "{exe}" "{old}" >nul 2>&1 || goto done
+move /y "{new}" "{exe}" >nul 2>&1 || (move /y "{old}" "{exe}" >nul & goto done)
 start "" "{exe}"
-ping -n 4 127.0.0.1 >nul
-del "{old}" >nul 2>&1
-:fail
+for /l %%i in (1,1,15) do (
+  ping -n 2 127.0.0.1 >nul
+  del "{old}" >nul 2>&1
+  if not exist "{old}" goto done
+)
+:done
 del "%~f0" >nul 2>&1
 """, encoding="mbcs" if os.name == "nt" else "utf-8")
     # The new exe must start as a fresh app: drop the PyInstaller variables this process inherited,

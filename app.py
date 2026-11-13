@@ -76,8 +76,14 @@ class Api:
     def apply_update(self):
         result = updater.apply()
         if result.get("ok"):
-            # the update script swaps the exe once this process has exited
-            threading.Timer(0.8, self._window.destroy).start()
+            # The update script swaps the exe only after this process has exited, so exiting is a must.
+            # Ask the window to close; window.destroy() called from here can silently fail to close it,
+            # so a separate timer force-exits shortly afterwards (settings are saved first).
+            server.save_config(server.CONFIG)
+            threading.Thread(target=self._window.destroy, daemon=True).start()
+            t = threading.Timer(3.0, os._exit, args=(0,))
+            t.daemon = True
+            t.start()
         return result
 
     def toggle_on_top(self):
@@ -89,6 +95,7 @@ class Api:
 
 
 def main():
+    updater.cleanup_leftovers()  # remove PoBLevelingCompanion.exe.old / .new left by an earlier update
     url = server.start_server(port=0)  # free port, so it never clashes with another running copy
     win_cfg = {**DEFAULT_WINDOW, **server.CONFIG.get("window", {})}
     api = Api(bool(win_cfg["onTop"]))
