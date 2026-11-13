@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-11-13
+
 ### 日本語
 #### 修正
 - 「更新」を押してもアプリが閉じず、入れ替え後に `PoBLevelingCompanion.exe.old` が残ることがある問題を修正 (更新開始後はアプリを確実に終了。終了しない場合は入れ替えを中止)
@@ -124,7 +126,8 @@ First public version.
 - Japanese / English UI.
 - Automatic detection of `Client.txt` (Steam, standalone and Epic installs).
 
-[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.2...v0.1.3
