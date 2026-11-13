@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-13
+
 ### 日本語
 #### 変更
 - ジェム名の言語の既定値を「自動 (システムの言語)」に変更。日本語の Windows では最初から日本語名で表示されます (以前に保存された「英語」の既定値もリセット)
@@ -112,7 +114,8 @@ First public version.
 - Japanese / English UI.
 - Automatic detection of `Client.txt` (Steam, standalone and Epic installs).
 
-[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.1...v0.1.2
