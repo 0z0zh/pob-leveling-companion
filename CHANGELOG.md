@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-13
+
 ### 日本語
 #### 追加
 - 起動時に GitHub で新しいバージョンを確認し、ボタン一つで更新する機能 (ダウンロードした exe は SHA-256 で検証。設定で確認を無効にできます)
@@ -102,7 +104,8 @@ First public version.
 - Japanese / English UI.
 - Automatic detection of `Client.txt` (Steam, standalone and Epic installs).
 
-[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.0...v0.1.1
