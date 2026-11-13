@@ -100,7 +100,7 @@ DEFAULT_CONFIG = {
     "lastBuild": "",
     "lang": "",  # "" = follow the system language
     "timerAutoStart": False,  # start the run timer automatically on a new character
-    "gemLang": "en",  # language of gem names: "en" or "ja"
+    "gemNameLang": "",  # language of gem names: "" = follow the system language, "en" or "ja"
     "updateCheck": True,  # check GitHub for a newer release at start-up
     "timerStart": None,  # wall-clock time of the manual timer start
 }
@@ -113,6 +113,7 @@ def load_config():
             cfg.update(json.loads(CONFIG_PATH.read_text(encoding="utf-8")))
         except Exception as e:  # noqa: BLE001
             print("config.json read error:", e)
+    cfg.pop("gemLang", None)  # replaced by gemNameLang (old default was always English)
     if not cfg.get("clientLog") or not Path(cfg["clientLog"]).is_file():
         found = detect_client_log()
         if found:
@@ -796,7 +797,7 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/import":
                 return self._send(200, parse_build(decode_export_code(body["code"])))
             if u.path == "/api/config":
-                for k in ("buildsDir", "clientLog", "characterName", "pobDir", "lang", "timerAutoStart", "gemLang", "updateCheck"):
+                for k in ("buildsDir", "clientLog", "characterName", "pobDir", "lang", "timerAutoStart", "gemNameLang", "updateCheck"):
                     if k in body:
                         CONFIG[k] = body[k]
                 save_config(CONFIG)

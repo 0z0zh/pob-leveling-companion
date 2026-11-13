@@ -91,7 +91,7 @@ Path of Exile のレベリング中に、Path of Building (PoB) のビルドの 
 - キャラクター名 (空欄ならどのキャラのレベルアップにも反応)
 - PoB の Builds フォルダ / インストールフォルダ
 - タイマーの自動スタート (既定は OFF)
-- ジェム名の言語 (英語 / 日本語。既定は英語)
+- ジェム名の言語 (自動 / 英語 / 日本語。既定の「自動」はシステムの言語に合わせます)
 - 起動時に新しいバージョンを確認する (既定は ON)
 - 表示言語
 
@@ -225,7 +225,7 @@ Change them in "Settings"; they are saved to `config.json` next to the exe.
 - Character name (empty = react to any character's level-up)
 - PoB Builds folder / install folder
 - Start the timer automatically (off by default)
-- Gem name language (English / Japanese; English by default)
+- Gem name language (Auto / English / Japanese; the default "Auto" follows your system language)
 - Check for a new version at start-up (on by default)
 - Language
 

@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 日本語
+#### 変更
+- ジェム名の言語の既定値を「自動 (システムの言語)」に変更。日本語の Windows では最初から日本語名で表示されます (以前に保存された「英語」の既定値もリセット)
+
+### English
+#### Changed
+- Gem name language now defaults to "Auto", which follows the system language, so a Japanese Windows shows Japanese names from the start (the English default saved by earlier versions is reset).
+
 ## [0.1.4] - 2026-11-13
 
 ### 日本語
