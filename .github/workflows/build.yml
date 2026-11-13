@@ -67,6 +67,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        # release notes template: .github/release-notes.md
 
       - name: Tag must match VERSION
         run: |
@@ -86,10 +87,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
+          # release page text, incl. the "Code signing policy" link SignPath asks for on download pages
+          sed -e "s#{{REPO}}#${GITHUB_REPOSITORY}#g" -e "s#{{TAG}}#${TAG}#g" .github/release-notes.md > notes.md
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
+            gh release edit "$TAG" --notes-file notes.md --repo "$GITHUB_REPOSITORY"
           else
             gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag \
-              --title "$TAG" \
-              --notes "See [CHANGELOG.md](https://github.com/$GITHUB_REPOSITORY/blob/$TAG/CHANGELOG.md) for the changes. / 変更内容は CHANGELOG.md を参照してください。"
+              --title "$TAG" --notes-file notes.md
           fi

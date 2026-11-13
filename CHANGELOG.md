@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 日本語
+#### 変更
+- リリースページの本文に、コード署名ポリシーへのリンク・プライバシーの記載・ダウンロードの説明を追加
+
+### English
+#### Changed
+- Release pages now include a link to the code signing policy, the privacy statement and download notes.
+
 ## [0.1.1] - 2026-11-13
 
 ### 日本語
