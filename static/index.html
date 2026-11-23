@@ -80,6 +80,7 @@ canvas.drag { cursor: grabbing; }
 .acq:not(.now) .acq-act { color: var(--muted); }
 .acq-row { display: flex; gap: 6px; align-items: baseline; padding: 1px 0; }
 .acq-row .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.acq-later { font-size: 10px; color: var(--accent); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }
 .acq-src { color: var(--muted); font-size: 11px; }
 dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; width: min(560px, 92vw); }
 dialog::backdrop { background: rgba(0,0,0,.6); }
@@ -157,7 +158,7 @@ const I18N = {
     points: n => `${n} ポイント`, noSkillSet: "スキルセットがありません", removedGems: "前セットから外れたジェム",
     epilogue: "エピローグ以降", reward: (q, npc) => `報酬: ${q} (${npc})`, buy: (npc, q) => `購入: ${npc} (「${q}」後)`,
     acqTitle: "ジェム入手タイミング", now: "現在", nowMark: " ← 現在", available: " (入手可能)",
-    noneInAct: a => `${a} で入手するジェムはありません`, acqPrev: "前の Act", acqNext: "次の Act", acqBack: "現在の Act", acqAll: "すべて", acqBackTip: "今いる Act の表示に戻る", acqAllTip: "すべての Act をまとめて表示", notObtainable: "クエスト/購入では入手不可 (ドロップ・交換など)",
+    noneInAct: a => `${a} で入手するジェムはありません`, acqPrev: "前の Act", acqNext: "次の Act", acqBack: "現在の Act", acqAll: "すべて", acqBackTip: "今いる Act の表示に戻る", acqAllTip: "すべての Act をまとめて表示", fromSet: s => `${s} から使用`, notObtainable: "クエスト/購入では入手不可 (ドロップ・交換など)",
     startGem: "初期装備", chestGem: "最初の宝箱",
     noServer: "サーバーに接続できません", buildReloaded: "ビルドファイルの更新を反映しました",
     ERR_LOG_NOT_SET: "Client.txt が見つかりません。設定でパスを指定してください",
@@ -180,7 +181,7 @@ const I18N = {
     points: n => `${n} points`, noSkillSet: "No skill sets", removedGems: "Gems removed since the previous set",
     epilogue: "Epilogue / endgame", reward: (q, npc) => `Reward: ${q} (${npc})`, buy: (npc, q) => `Buy: ${npc} (after "${q}")`,
     acqTitle: "Where to get gems", now: "now", nowMark: " ← current", available: " (available)",
-    noneInAct: a => `No gems to pick up in ${a}`, acqPrev: "Previous act", acqNext: "Next act", acqBack: "Current act", acqAll: "All", acqBackTip: "Go back to the act you are in", acqAllTip: "Show every act at once", notObtainable: "Not from quests/vendors (drops, trades, etc.)",
+    noneInAct: a => `No gems to pick up in ${a}`, acqPrev: "Previous act", acqNext: "Next act", acqBack: "Current act", acqAll: "All", acqBackTip: "Go back to the act you are in", acqAllTip: "Show every act at once", fromSet: s => `used from ${s}`, notObtainable: "Not from quests/vendors (drops, trades, etc.)",
     startGem: "Starting gem", chestGem: "First chest",
     noServer: "Cannot reach the local server", buildReloaded: "Build file change applied",
     ERR_LOG_NOT_SET: "Client.txt not found. Set its path in Settings",
@@ -534,13 +535,33 @@ function gameBaseClass() {
   return { Luminary: "Scion", Reliquarian: "Scion", Warden: "Ranger", Raider: "Ranger" }[c] || null;
 }
 const ACT_NAME = a => a >= 11 ? t("epilogue") : `Act ${a}`;
+// Skill sets the gem list covers: the shown set + every leveling set still ahead.
+// Leveling set = has a level range starting at Lv 70 or lower (campaign); sets whose range already
+// ended below the current level are skipped (their gems are no longer needed); endgame sets
+// (Lvl 90, unnumbered "Midgame", ...) are left out.
+const LEVELING_MAX_START = 70;
+function acquisitionSets(shown) {
+  const sets = S.build.skillSets, bounds = setBounds(sets);
+  const lvl = S.level ?? (parseRange(shown.title) || [1])[0];
+  const out = sets.map((s, i) => ({ s, r: bounds[i] }))
+    .filter(({ s, r }) => s === shown || (r && r[0] <= LEVELING_MAX_START && r[1] >= lvl))
+    .sort((a, b) => (a.r ? a.r[0] : -1) - (b.r ? b.r[0] : -1));
+  return out.map(x => x.s);
+}
 function renderAcquire(set) {
   if (!S.gemSources) return "";
   const cls = gameBaseClass() || S.build.className;
-  const seen = new Map();
-  for (const g of set.groups) {
-    if (g.fromItem) continue;
-    for (const gem of g.gems) if (!seen.has(gem.name)) seen.set(gem.name, gem);
+  // gem name -> gem (first occurrence) + the first set that uses it (in level order)
+  const seen = new Map(), firstSet = new Map();
+  for (const s of acquisitionSets(set)) {
+    for (const g of s.groups) {
+      if (g.fromItem) continue;
+      for (const gem of g.gems) {
+        if (!seen.has(gem.name)) seen.set(gem.name, gem);
+        if (s === set) firstSet.set(gem.name, null);           // used in the shown set: no tag
+        else if (!firstSet.has(gem.name)) firstSet.set(gem.name, s.title);
+      }
+    }
   }
   const byAct = new Map(), unknown = [];
   for (const gem of seen.values()) {
@@ -575,7 +596,8 @@ function renderAcquire(set) {
     const state = cur == null ? "" : act < cur ? "past" : act === cur ? "now" : "";
     html += `<div class="acq ${state}"><div class="acq-act">${ACT_NAME(act)}${state === "now" ? t("nowMark") : state === "past" ? t("available") : ""}</div>`;
     for (const { gem, opts } of byAct.get(act)) {
-      html += `<div class="acq-row"><span class="dot" style="background:var(--gem-${gem.color})"></span><div><div ${gemTitle(gem.name)}>${esc(gemName(gem.name))}</div>${opts.map(o => `<div class="acq-src">${esc(o)}</div>`).join("")}</div></div>`;
+      const later = firstSet.get(gem.name);
+      html += `<div class="acq-row"><span class="dot" style="background:var(--gem-${gem.color})"></span><div><div ${gemTitle(gem.name)}>${esc(gemName(gem.name))}${later ? ` <span class="acq-later">${esc(t("fromSet", later))}</span>` : ""}</div>${opts.map(o => `<div class="acq-src">${esc(o)}</div>`).join("")}</div></div>`;
     }
     html += `</div>`;
   }

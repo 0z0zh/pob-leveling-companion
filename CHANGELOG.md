@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 日本語
+#### 変更
+- ジェム入手タイミングの対象を、表示中の set だけから「この先のレベリング用 set」まで拡大 (開始 Lv70 以下でまだ通り過ぎていない set。後の set で使うジェムには「〇〇 から使用」と表示。エンドゲーム用 set と、もう外したジェムは除外)
+
+### English
+#### Changed
+- Gem acquisition timing now covers the leveling sets still ahead, not only the shown set (sets starting at Lv 70 or lower that are not yet passed; gems first used in a later set are tagged "used from <set>"; endgame sets and dropped gems are left out).
+
 ## [0.1.6] - 2026-11-13
 
 ### 日本語
