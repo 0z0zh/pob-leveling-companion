@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-23
+
 ### 日本語
 #### 変更
 - ジェム入手タイミングの対象を、表示中の set だけから「この先のレベリング用 set」まで拡大 (開始 Lv70 以下でまだ通り過ぎていない set。後の set で使うジェムには「〇〇 から使用」と表示。エンドゲーム用 set と、もう外したジェムは除外)
@@ -134,7 +136,8 @@ First public version.
 - Japanese / English UI.
 - Automatic detection of `Client.txt` (Steam, standalone and Epic installs).
 
-[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/0z0zh/pob-leveling-companion/compare/v0.1.3...v0.1.4
